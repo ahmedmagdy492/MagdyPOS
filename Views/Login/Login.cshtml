@@ -1,0 +1,35 @@
+@model MagdyPOS.Models.LoginViewModel
+@{
+    ViewData["Title"] = "تسجيل الدخول";
+}
+
+<div class="login-card">
+    <div class="login-brand">
+        <div class="login-logo">M</div>
+        <div>
+            <div class="login-brand-title">MagdyPOS</div>
+            <div class="login-brand-sub">نظام نقاط البيع</div>
+        </div>
+    </div>
+
+    <h1 class="login-heading">تسجيل الدخول</h1>
+
+    <form asp-action="Login" asp-controller="Login" method="post" class="login-form">
+        <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+        <div asp-validation-summary="ModelOnly" class="login-validation-summary"></div>
+
+        <div class="login-field">
+            <label asp-for="Username"></label>
+            <input asp-for="Username" class="login-input" autocomplete="email" autofocus />
+            <span asp-validation-for="Username" class="login-field-error"></span>
+        </div>
+
+        <div class="login-field">
+            <label asp-for="Password"></label>
+            <input asp-for="Password" class="login-input" autocomplete="current-password" />
+            <span asp-validation-for="Password" class="login-field-error"></span>
+        </div>
+
+        <button type="submit" class="login-submit">دخول</button>
+    </form>
+</div>

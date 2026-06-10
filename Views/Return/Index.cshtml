@@ -1,0 +1,199 @@
+﻿@model IEnumerable<ReturnViewModel>
+
+
+<form style="display:none">
+    @Html.AntiForgeryToken()
+</form>
+
+<div class="admin-page-head">
+    <div>
+        <h1>المرتجعات</h1>
+    </div>
+
+    <button type="button" id="btnOpenAddReturn" class="btn-admin-header">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        إضافة مرتجع
+    </button>
+
+    @{
+        var q = Context.Request.Query;
+        int pageNo = 1;
+        int pageSize = 10;
+        if (!string.IsNullOrEmpty(q["pageNo"])) int.TryParse(q["pageNo"], out pageNo);
+        if (!string.IsNullOrEmpty(q["pageSize"])) int.TryParse(q["pageSize"], out pageSize);
+        if (pageNo < 1) pageNo = 1;
+        if (pageSize < 1) pageSize = 10;
+        var from = q["from"].ToString();
+        var to = q["to"].ToString();
+
+        int totalCount = 0;
+        if (ViewBag.TotalCount != null)
+        {
+            // ViewBag.TotalCount expected to be set by the controller when available
+            int.TryParse(ViewBag.TotalCount.ToString(), out totalCount);
+        }
+
+        var modelCount = Model?.Count() ?? 0;
+        int totalPages;
+        if (totalCount > 0)
+        {
+            totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+        }
+        else
+        {
+            // fallback: if we received exactly pageSize items assume there may be a next page
+            totalPages = (modelCount == pageSize) ? pageNo + 1 : pageNo;
+        }
+    }
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">قائمة المرتجعات</h2>
+        @if (User.IsInRole(AppRoles.Admin))
+        {
+            <p style="color: red">@(ViewBag.DateFilterError)</p>
+            <form method="get" class="orders-filter-form" style="display:flex;gap:0.5rem;align-items:center;margin-top:0.5rem;">
+                <div class="date-filter">
+                    <label for="fromDate" style="color:var(--text-gray);font-size:0.9rem;margin-right:0.25rem;">من</label>
+                    <input id="fromDate" name="from" type="date" class="form-control" value="@(Context.Request.Query["from"].ToString())" />
+                </div>
+
+                <div class="date-filter">
+                    <label for="toDate" style="color:var(--text-gray);font-size:0.9rem;margin-right:0.25rem;margin-left:0.5rem;">إلى</label>
+                    <input id="toDate" name="to" type="date" class="form-control" value="@(Context.Request.Query["to"].ToString())" />
+                </div>
+
+                <button type="submit" class="btn-admin-header" style="margin-left:0.5rem;">تصفية</button>
+            </form>
+        }
+    </div>
+
+    <div class="card-body" style="padding: 0;">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>رقم الطلب</th>
+                        <th>ملاحظات</th>
+                        <th>التاريخ</th>
+                        <th>المستخدم</th>
+                        <th>الإجمالي</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="10" style="padding: 1rem; color: var(--text-gray); text-align:center;">
+                                لا توجد مرتجعات حتى الآن.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var o in Model)
+                        {
+                            <tr>
+                                <td style="font-weight: 600;"><a asp-controller="Orders" asp-action="Details" asp-route-id="@o.Order.OrderId">@o.Order.OrderNumber</a></td>
+                                <td style="color: var(--text-gray);">@(string.IsNullOrWhiteSpace(o.Notes) ? "-" : o.Notes)</td>
+                                <td style="color: var(--text-gray);">@o.CreatedAt.ToString("dddd dd MMM, yyyy HH:mm tt")</td>
+                                <td>@o.User.UserName</td>
+                                <td style="font-weight: 600;">@o.Amount.ToString("0.00") ج.م</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;">
+        @{
+            var maxPagesToShow = 5;
+            var startPage = Math.Max(1, pageNo - 2);
+            var endPage = Math.Min(totalPages, startPage + maxPagesToShow - 1);
+            if (endPage - startPage < maxPagesToShow - 1)
+            {
+                startPage = Math.Max(1, endPage - maxPagesToShow + 1);
+            }
+        }
+
+        <div class="pagination-left" style="display:flex;align-items:center;gap:0.5rem;">
+            <form method="get" id="pageSizeForm" style="display:flex;align-items:center;gap:0.5rem;">
+                <input type="hidden" name="from" value="@from" />
+                <input type="hidden" name="to" value="@to" />
+                <input type="hidden" name="pageNo" value="1" />
+                <label style="color:var(--text-gray);">عرض</label>
+                <select name="pageSize" onchange="this.form.submit()" style="padding:0.25rem;">
+                    <option value="10" selected="@(pageSize == 10 ? "selected" : "")">10</option>
+                    <option value="25" selected="@(pageSize == 25 ? "selected" : "")">25</option>
+                    <option value="50" selected="@(pageSize == 50 ? "selected" : "")">50</option>
+                    <option value="100" selected="@(pageSize == 100 ? "selected" : "")">100</option>
+                </select>
+            </form>
+        </div>
+
+        <div class="pagination-center" style="display:flex;align-items:center;gap:0.25rem;">
+            <a asp-action="Index" asp-route-pageNo="@(pageNo - 1)" asp-route-pageSize="@pageSize" asp-route-from="@from" asp-route-to="@to" class="btn" style="pointer-events:@(pageNo <= 1 ? "none" : "auto");opacity:@(pageNo <= 1 ? "0.5" : "1");">&laquo; السابق</a>
+
+            @for (int p = startPage; p <= endPage; p++)
+            {
+                <a asp-action="Index" asp-route-pageNo="@p" asp-route-pageSize="@pageSize" asp-route-from="@from" asp-route-to="@to" class="btn" style="font-weight:@(p == pageNo ? "700" : "400");">@p</a>
+            }
+
+            <a asp-action="Index" asp-route-pageNo="@(pageNo + 1)" asp-route-pageSize="@pageSize" asp-route-from="@from" asp-route-to="@to" class="btn" style="pointer-events:@(pageNo >= totalPages ? "none" : "auto");opacity:@(pageNo >= totalPages ? "0.5" : "1");">التالي &raquo;</a>
+        </div>
+
+        <div class="pagination-right" style="color:var(--text-gray);">
+            @if (totalCount > 0)
+            {
+                <span>إظهار @(((pageNo - 1) * pageSize) + 1)-@Math.Min(pageNo * pageSize, totalCount) من @totalCount</span>
+            }
+            else
+            {
+                <span>إظهار @modelCount من النتائج</span>
+            }
+        </div>
+    </div>
+</div>
+
+
+<div id="addReturnModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-content__head">
+            <h2 class="modal-content__title">إضافة مرتجع</h2>
+            <button type="button" class="modal-close-btn" data-close-modal="addReturnModal" aria-label="إغلاق">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <form id="addReturnForm">
+            <div class="admin-modal-grid">
+                <div>
+                    <label class="form-label">رقم الطلب الذي تم ارجعاه<span style="color: var(--error);">*</span></label>
+                    <input type="text" name="orderId" id="orderId" class="form-input" required />
+                </div>
+                <div>
+                    <label class="form-label">الملاحظات <span style="color: var(--error);">*</span></label>
+                    <textarea class="form-input" name="notes" rows="3" placeholder="أضف ملاحظاتك هنا..."></textarea>
+                    <span class="field-error"></span>
+                </div>
+                <div>
+                    <label class="form-label">القيمة المردة <span style="color: var(--error);">*</span></label>
+                    <input type="number" id="amount" name="amount" class="form-input" min="0" step="0.01" required />
+                </div>
+            </div>
+            <div class="admin-modal-actions">
+                <button type="submit" class="btn-modal-primary">حفظ</button>
+                <button type="button" class="btn-modal-secondary" data-close-modal="addReturnModal">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="~/js/admin-crud-pages.js" asp-append-version="true"></script>

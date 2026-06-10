@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.37012.4 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MagdyPOS", "MagdyPOS.csproj", "{2DA6F662-76F8-4E17-AAE5-D496BF1D9102}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2DA6F662-76F8-4E17-AAE5-D496BF1D9102}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DA6F662-76F8-4E17-AAE5-D496BF1D9102}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DA6F662-76F8-4E17-AAE5-D496BF1D9102}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DA6F662-76F8-4E17-AAE5-D496BF1D9102}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F0C2B500-F512-4884-94DC-59F458AC754C}
+	EndGlobalSection
+EndGlobal

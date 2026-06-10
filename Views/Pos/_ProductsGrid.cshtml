@@ -1,0 +1,36 @@
+@model PosProductsGridViewModel
+
+<div id="posProductsGrid" class="pos-products-grid" data-page="@Model.Page" data-total-pages="@Model.TotalPages">
+    @if (!Model.Products.Any())
+    {
+        <div class="pos-cart-empty" style="grid-column: 1 / -1;">لا توجد منتجات.</div>
+    }
+    else
+    {
+        foreach (var p in Model.Products)
+        {
+            <button type="button"
+                    class="pos-product-card"
+                    data-id="@p.Id"
+                    data-name="@p.Name"
+                    data-category="@p.Category"
+                    data-price="@p.Price.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                    data-icon="@p.Icon">
+                <span class="pos-emoji" aria-hidden="true">@p.Icon</span>
+                <h4>@p.Name</h4>
+                <p class="pos-cat">@p.Category</p>
+                <div class="pos-price-pill">@p.Price.ToString("0.00") ج.م</div>
+            </button>
+        }
+    }
+</div>
+
+@if (Model.TotalPages > 1)
+{
+    <div class="pos-pager no-print" style="display:flex; gap:8px; align-items:center; justify-content:center; margin-top: 14px;">
+        <button type="button" class="pos-btn-danger" data-pos-page="@(Model.Page - 1)" @(Model.Page <= 1 ? "disabled" : "")>السابق</button>
+        <span style="color: var(--text-gray); font-size: 12px;">صفحة @Model.Page من @Model.TotalPages</span>
+        <button type="button" class="pos-btn-success" data-pos-page="@(Model.Page + 1)" @(Model.Page >= Model.TotalPages ? "disabled" : "")>التالي</button>
+    </div>
+}
+

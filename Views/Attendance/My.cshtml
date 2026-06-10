@@ -1,0 +1,58 @@
+@model MyAttendanceViewModel
+
+<div class="admin-page-head">
+    <div>
+        <h1>الحضور والانصراف</h1>
+        <p>سجل حضورك وانصرافك لليوم.</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">اليوم: @Model.WorkDate.ToString("yyyy-MM-dd")</h2>
+    </div>
+    <div class="card-body" style="max-width:900px;">
+        @if (TempData["AttendanceError"] != null)
+        {
+            <div style="margin-bottom:1rem;color:#b42318;font-weight:700;">
+                @TempData["AttendanceError"]
+            </div>
+        }
+        @if (TempData["AttendanceMessage"] != null)
+        {
+            <div style="margin-bottom:1rem;color:var(--success,#067647);font-weight:700;">
+                @TempData["AttendanceMessage"]
+            </div>
+        }
+
+        <div style="display:grid;gap:0.5rem;margin-bottom:1rem;">
+            <div><strong>الحضور:</strong>
+                <span style="color:var(--text-gray);">
+                    @(Model.TodayRecord == null ? "—" : Model.TodayRecord.CheckInAtUtc.ToLocalTime().ToString("HH:mm"))
+                </span>
+            </div>
+            <div><strong>الانصراف:</strong>
+                <span style="color:var(--text-gray);">
+                    @(Model.TodayRecord?.CheckOutAtUtc == null ? "—" : Model.TodayRecord.CheckOutAtUtc.Value.ToLocalTime().ToString("HH:mm"))
+                </span>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+            <form asp-action="CheckIn" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn-admin-header" style="pointer-events:@(Model.TodayRecord == null ? "auto" : "none");opacity:@(Model.TodayRecord == null ? "1" : "0.5");">
+                    تسجيل حضور
+                </button>
+            </form>
+
+            <form asp-action="CheckOut" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn-admin-header" style="background:#111827;pointer-events:@(Model.TodayRecord != null && Model.TodayRecord.CheckOutAtUtc == null ? "auto" : "none");opacity:@(Model.TodayRecord != null && Model.TodayRecord.CheckOutAtUtc == null ? "1" : "0.5");">
+                    تسجيل انصراف
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+

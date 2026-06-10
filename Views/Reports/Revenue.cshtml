@@ -1,0 +1,97 @@
+@model RevenueReportViewModel
+
+<div class="admin-page-head">
+    <div>
+        <h1>تقرير الإيراد</h1>
+        <p>الإيراد = (صافي المبيعات) - (إجمالي المصروفات) خلال فترة محددة.</p>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:1rem;">
+    <div class="card-header">
+        <h2 class="card-title">الفترة</h2>
+        <p style="color:red">@(ViewBag.DateFilterError)</p>
+        <form method="get" style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;margin-top:0.5rem;">
+            <div class="date-filter">
+                <label style="color:var(--text-gray);font-size:0.9rem;margin-right:0.25rem;">من</label>
+                <input name="from" type="date" class="form-control" value="@(ViewBag.From ?? Model.From.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div class="date-filter">
+                <label style="color:var(--text-gray);font-size:0.9rem;margin-right:0.25rem;">إلى</label>
+                <input name="to" type="date" class="form-control" value="@(ViewBag.To ?? Model.To.ToString("yyyy-MM-dd"))" />
+            </div>
+            <button type="submit" class="btn-admin-header">تحديث</button>
+        </form>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:1rem;">
+    <div class="card-header">
+        <h2 class="card-title">ملخص</h2>
+    </div>
+    <div class="card-body" style="display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:0.75rem;">
+        <div class="card" style="padding:0.75rem;">
+            <div style="color:var(--text-gray);">إجمالي المبيعات (قبل الخصم)</div>
+            <div style="font-weight:800;font-size:1.1rem;">@Model.SalesGross.ToString("0.00") ج.م</div>
+        </div>
+        <div class="card" style="padding:0.75rem;">
+            <div style="color:var(--text-gray);">الخصم</div>
+            <div style="font-weight:800;font-size:1.1rem;">@Model.SalesDiscount.ToString("0.00") ج.م</div>
+        </div>
+        <div class="card" style="padding:0.75rem;">
+            <div style="color:var(--text-gray);">صافي المبيعات</div>
+            <div style="font-weight:800;font-size:1.1rem;">@Model.SalesNet.ToString("0.00") ج.م</div>
+        </div>
+        <div class="card" style="padding:0.75rem;border:2px solid rgba(0,0,0,0.06);">
+            <div style="color:var(--text-gray);">الإيراد (صافي المبيعات - المصروفات)</div>
+            <div style="font-weight:900;font-size:1.2rem;">@Model.RevenueNet.ToString("0.00") ج.م</div>
+            <div style="color:var(--text-gray);margin-top:0.25rem;">إجمالي المصروفات: @Model.ExpensesTotal.ToString("0.00") ج.م</div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
+        <h2 class="card-title">آخر المصروفات داخل الفترة (حتى 200)</h2>
+        <a asp-controller="Expenses" asp-action="Index" class="btn-admin-header">عرض كل المصروفات</a>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>التاريخ</th>
+                    <th>العنوان</th>
+                    <th>القيمة</th>
+                    <th>الخامة</th>
+                    <th>كمية</th>
+                </tr>
+                </thead>
+                <tbody>
+                @if (Model.Expenses == null || !Model.Expenses.Any())
+                {
+                    <tr>
+                        <td colspan="6" style="padding: 1rem; color: var(--text-gray); text-align:center;">لا توجد مصروفات داخل الفترة.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var e in Model.Expenses)
+                    {
+                        <tr>
+                            <td style="font-weight:600;">@e.Id</td>
+                            <td style="color:var(--text-gray);">@e.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@e.Title</td>
+                            <td style="font-weight:700;">@e.Amount.ToString("0.00") ج.م</td>
+                            <td style="color:var(--text-gray);">@(e.Material == null ? "-" : $"{e.Material.Name} ({e.Material.Id})")</td>
+                            <td style="color:var(--text-gray);">@(e.MaterialQuantity.HasValue ? e.MaterialQuantity.Value.ToString("0.###") : "-")</td>
+                        </tr>
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

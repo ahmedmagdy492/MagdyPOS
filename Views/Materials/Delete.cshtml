@@ -1,0 +1,16 @@
+@model Material
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">حذف خامة</h2>
+    </div>
+    <div class="card-body">
+        <p>هل أنت متأكد من حذف الخامة <strong>@Model.Name</strong> (الكود: @Model.Id)؟</p>
+
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn-modal-danger">حذف</button>
+            <a asp-action="Index" class="btn-modal-secondary">إلغاء</a>
+        </form>
+    </div>
+</div>

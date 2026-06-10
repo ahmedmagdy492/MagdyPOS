@@ -1,0 +1,165 @@
+@model AdminDashboardViewModel
+@using System.Text.Json
+
+<div class="dashboard-date-row">
+                <div class="date-filter">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-gray)">
+                        <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+                        <line x1="16" x2="16" y1="2" y2="6"></line>
+                        <line x1="8" x2="8" y1="2" y2="6"></line>
+                        <line x1="3" x2="21" y1="10" y2="10"></line>
+                    </svg>
+                    <span>@Model.Date.ToString("dddd")</span>
+                    <input type="date" id="dateInput" value="@Model.Date.ToString("yyyy-MM-dd")" />
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-label">إجمالي المبيعات اليوم</div>
+                            <div class="stat-value">@Model.TodaySales.ToString("N2") ج.م</div>
+                        </div>
+                        <div class="stat-icon blue">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" x2="12" y1="2" y2="22"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 0 0 1 0 7H6"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="stat-change">
+                        <span>بيانات فعلية من الطلبات</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-label">عدد الطلبات</div>
+                            <div class="stat-value">@Model.TodayOrdersCount.ToString("N0")</div>
+                        </div>
+                        <div class="stat-icon green">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                                <line x1="3" x2="21" y1="6" y2="6"></line>
+                                <path d="M16 10a4 4 0 0 1-8 0"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="stat-change">
+                        <span>طلبات اليوم المحدد</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-label">المخزون المتبقي</div>
+                            <div class="stat-value">@Model.TotalMaterialsQuantity.ToString("N2")</div>
+                        </div>
+                        <div class="stat-icon gray">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m7.5 4.27 9 5.15"></path>
+                                <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="stat-change">
+                        <span>إجمالي كميات الخامات</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-label">الخامات منخفضة المخزون</div>
+                            <div class="stat-value">@Model.LowStockMaterialsCount.ToString("N0")</div>
+                        </div>
+                        <div class="stat-icon red">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                                <path d="M12 9v4"></path>
+                                <path d="M12 17h.01"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="stat-change">
+                        <span>كمية أقل من حد التنبيه</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">المبيعات آخر 7 أيام</h2>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="salesChart"
+                                data-labels='@JsonSerializer.Serialize(Model.SalesLast7Days.Select(x => x.Label).ToList())'
+                                data-values='@JsonSerializer.Serialize(Model.SalesLast7Days.Select(x => x.Sales).ToList())'
+                                aria-label="المبيعات آخر 7 أيام"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">أفضل المنتجات مبيعاً اليوم</h2>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>المنتج</th>
+                                    <th>الكمية المباعة</th>
+                                    <th>الإيرادات</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (!Model.TopProductsToday.Any())
+                                {
+                                    <tr>
+                                        <td colspan="4" style="padding: 1rem; text-align: center; color: var(--text-gray);">
+                                            لا توجد مبيعات في هذا اليوم.
+                                        </td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    foreach (var p in Model.TopProductsToday)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="product-cell">
+                                                    <div class="product-avatar">@(string.IsNullOrWhiteSpace(p.ProductName) ? "?" : p.ProductName.Substring(0, 1))</div>
+                                                    <div>
+                                                        <div style="font-weight: 600;">@p.ProductName</div>
+                                                        <div style="font-size: 12px; color: var(--text-gray);">SKU: @p.ProductId</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>@p.QuantitySold قطعة</td>
+                                            <td style="font-weight: 600;">@p.Revenue.ToString("N2") ج.م</td>
+                                            <td>
+                                                <span class="@(p.IsLowStock ? "badge-muted" : "badge success")">
+                                                    @(p.IsLowStock ? "منخفض" : "متوفر")
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+<script src="~/js/chart.umd.min.js" crossorigin="anonymous"></script>
+<script src="~/js/admin-index.js" asp-append-version="true"></script>

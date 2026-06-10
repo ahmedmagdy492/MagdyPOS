@@ -1,0 +1,23 @@
+@model Expense
+
+<div class="card">
+    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
+        <h2 class="card-title">تفاصيل مصروف #@Model.Id</h2>
+        <div style="display:flex;gap:0.5rem;">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-admin-header">تعديل</a>
+            <a asp-action="Index" class="btn">رجوع</a>
+        </div>
+    </div>
+    <div class="card-body" style="display:grid;gap:0.75rem;max-width:900px;">
+        <div><strong>التاريخ:</strong> <span style="color:var(--text-gray);">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span></div>
+        <div><strong>العنوان:</strong> @Model.Title</div>
+        <div><strong>القيمة:</strong> <span style="font-weight:700;">@Model.Amount.ToString("0.00") ج.م</span></div>
+        <div><strong>ملاحظات:</strong> <span style="color:var(--text-gray);">@(string.IsNullOrWhiteSpace(Model.Notes) ? "-" : Model.Notes)</span></div>
+
+        <hr />
+        <div style="font-weight:700;">الربط بالخامة</div>
+        <div><strong>الخامة:</strong> <span style="color:var(--text-gray);">@(Model.Material == null ? "-" : $"{Model.Material.Name} ({Model.Material.Id})")</span></div>
+        <div><strong>كمية الخامة:</strong> <span style="color:var(--text-gray);">@(Model.MaterialQuantity.HasValue ? Model.MaterialQuantity.Value.ToString("0.###") : "-")</span></div>
+    </div>
+</div>
+

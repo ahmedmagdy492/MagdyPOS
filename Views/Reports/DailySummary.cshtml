@@ -1,0 +1,114 @@
+@model DailySummaryReportViewModel
+
+<div class="admin-page-head">
+    <div>
+        <h1>ملخص اليوم</h1>
+        <p>عرض مبيعات اليوم + مشتريات اليوم (مصروفات مرتبطة بخامات) مع إمكانية تصدير Excel (CSV).</p>
+    </div>
+    <div style="display:flex;gap:0.5rem;align-items:center;">
+        <a asp-action="DailySummaryExport" asp-route-date="@Model.Date.ToString("yyyy-MM-dd")" class="btn-admin-header">تصدير Excel</a>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:1rem;">
+    <div class="card-header">
+        <h2 class="card-title">اليوم</h2>
+        <form method="get" style="display:flex;gap:0.5rem;align-items:end;flex-wrap:wrap;margin-top:0.5rem;">
+            <div class="date-filter">
+                <label style="color:var(--text-gray);font-size:0.9rem;margin-right:0.25rem;">التاريخ</label>
+                <input name="date" type="date" class="form-control" value="@Model.Date.ToString("yyyy-MM-dd")" />
+            </div>
+            <button type="submit" class="btn-admin-header">عرض</button>
+        </form>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:1rem;">
+    <div class="card-header">
+        <h2 class="card-title">ملخص المبيعات</h2>
+    </div>
+    <div class="card-body" style="display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:0.75rem;">
+        <div class="card" style="padding:0.75rem;">
+            <div style="color:var(--text-gray);">عدد الطلبات</div>
+            <div style="font-weight:900;font-size:1.15rem;">@Model.OrdersCount</div>
+        </div>
+        <div class="card" style="padding:0.75rem;">
+            <div style="color:var(--text-gray);">إجمالي المبيعات (قبل الخصم)</div>
+            <div style="font-weight:900;font-size:1.15rem;">@Model.SalesGross.ToString("0.00") ج.م</div>
+        </div>
+        <div class="card" style="padding:0.75rem;">
+            <div style="color:var(--text-gray);">الخصم</div>
+            <div style="font-weight:900;font-size:1.15rem;">@Model.SalesDiscount.ToString("0.00") ج.م</div>
+        </div>
+        <div class="card" style="padding:0.75rem;border:2px solid rgba(0,0,0,0.06);">
+            <div style="color:var(--text-gray);">صافي المبيعات</div>
+            <div style="font-weight:950;font-size:1.2rem;">@Model.SalesNet.ToString("0.00") ج.م</div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:1rem;">
+    <div class="card-header">
+        <h2 class="card-title">ملخص المصروفات/المشتريات</h2>
+    </div>
+    <div class="card-body" style="display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));gap:0.75rem;">
+        <div class="card" style="padding:0.75rem;">
+            <div style="color:var(--text-gray);">إجمالي المشتريات (مصروفات مرتبطة بخامة)</div>
+            <div style="font-weight:900;font-size:1.15rem;">@Model.PurchasesTotal.ToString("0.00") ج.م</div>
+        </div>
+        <div class="card" style="padding:0.75rem;">
+            <div style="color:var(--text-gray);">إجمالي المصروفات (كل المصروفات)</div>
+            <div style="font-weight:900;font-size:1.15rem;">@Model.ExpensesTotal.ToString("0.00") ج.م</div>
+        </div>
+        <div class="card" style="padding:0.75rem;border:2px solid rgba(0,0,0,0.06);">
+            <div style="color:var(--text-gray);">صافي اليوم (مبيعات - مصروفات)</div>
+            <div style="font-weight:950;font-size:1.2rem;">@((Model.SalesNet - Model.ExpensesTotal).ToString("0.00")) ج.م</div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
+        <h2 class="card-title">مشتريات اليوم (مرتبط بخامة)</h2>
+        <a asp-controller="Expenses" asp-action="Index" asp-route-from="@Model.Start.ToString("yyyy-MM-dd")" asp-route-to="@Model.End.AddTicks(-1).ToString("yyyy-MM-dd")" class="btn">فتح المصروفات</a>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>التاريخ</th>
+                    <th>العنوان</th>
+                    <th>القيمة</th>
+                    <th>الخامة</th>
+                    <th>الكمية</th>
+                </tr>
+                </thead>
+                <tbody>
+                @if (Model.Purchases == null || !Model.Purchases.Any())
+                {
+                    <tr>
+                        <td colspan="6" style="padding: 1rem; color: var(--text-gray); text-align:center;">لا توجد مشتريات اليوم.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var e in Model.Purchases)
+                    {
+                        <tr>
+                            <td style="font-weight:600;">@e.Id</td>
+                            <td style="color:var(--text-gray);">@e.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@e.Title</td>
+                            <td style="font-weight:700;">@e.Amount.ToString("0.00") ج.م</td>
+                            <td style="color:var(--text-gray);">@(e.Material == null ? "-" : $"{e.Material.Name} ({e.Material.Id})")</td>
+                            <td style="color:var(--text-gray);">@(e.MaterialQuantity.HasValue ? e.MaterialQuantity.Value.ToString("0.###") : "-")</td>
+                        </tr>
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

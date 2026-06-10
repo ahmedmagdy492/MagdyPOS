@@ -1,0 +1,168 @@
+@model IEnumerable<OrderListItemViewModel>
+
+<div class="admin-page-head">
+    <div>
+        <h1>الطلبات</h1>
+        <p>عرض الطلبات المسجلة داخل النظام.</p>
+    </div>
+
+@{
+    var q = Context.Request.Query;
+    int pageNo = 1;
+    int pageSize = 10;
+    if (!string.IsNullOrEmpty(q["pageNo"])) int.TryParse(q["pageNo"], out pageNo);
+    if (!string.IsNullOrEmpty(q["pageSize"])) int.TryParse(q["pageSize"], out pageSize);
+    if (pageNo < 1) pageNo = 1;
+    if (pageSize < 1) pageSize = 10;
+    var from = q["from"].ToString();
+    var to = q["to"].ToString();
+
+    int totalCount = 0;
+    if (ViewBag.TotalCount != null)
+    {
+        // ViewBag.TotalCount expected to be set by the controller when available
+        int.TryParse(ViewBag.TotalCount.ToString(), out totalCount);
+    }
+
+    var modelCount = Model?.Count() ?? 0;
+    int totalPages;
+    if (totalCount > 0)
+    {
+        totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+    }
+    else
+    {
+        // fallback: if we received exactly pageSize items assume there may be a next page
+        totalPages = (modelCount == pageSize) ? pageNo + 1 : pageNo;
+    }
+}
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">قائمة الطلبات</h2>
+        @if(User.IsInRole(AppRoles.Admin))
+        {
+            <p style="color: red">@(ViewBag.DateFilterError)</p>
+            <form method="get" class="orders-filter-form" style="display:flex;gap:0.5rem;align-items:center;margin-top:0.5rem;">
+                <div class="date-filter">
+                    <label for="fromDate" style="color:var(--text-gray);font-size:0.9rem;margin-right:0.25rem;">من</label>
+                    <input id="fromDate" name="from" type="date" class="form-control" value="@(Context.Request.Query["from"].ToString())" />
+                </div>
+
+                <div class="date-filter">
+                    <label for="toDate" style="color:var(--text-gray);font-size:0.9rem;margin-right:0.25rem;margin-left:0.5rem;">إلى</label>
+                    <input id="toDate" name="to" type="date" class="form-control" value="@(Context.Request.Query["to"].ToString())" />
+                </div>
+
+                <button type="submit" class="btn-admin-header" style="margin-left:0.5rem;">تصفية</button>
+            </form>
+        }
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>رقم الطلب</th>
+                        <th>التاريخ</th>
+                        <th>المستخدم</th>
+                        <th>طريقة الدفع</th>
+                        <th>عدد الأصناف</th>
+                        <th>المجموع</th>
+                        <th>الخصم</th>
+                        <th>الإجمالي</th>
+                        <th>ملاحظات</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="10" style="padding: 1rem; color: var(--text-gray); text-align:center;">
+                            لا توجد طلبات حتى الآن.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var o in Model)
+                    {
+                        <tr>
+                            <td style="font-weight: 600;">@o.OrderNumber</td>
+                            <td style="color: var(--text-gray);">@o.OrderDate.ToString("dddd dd MMM, yyyy HH:mm tt")</td>
+                            <td>@o.UserName</td>
+                            <td style="color: var(--text-gray);">@(o.PaymentMethod == 1 ? "نقدي" : "بطاقة")</td>
+                            <td>@o.ItemsCount</td>
+                            <td style="font-weight: 600;">@o.Subtotal.ToString("0.00") ج.م</td>
+                            <td style="color: var(--text-gray);">@o.Discount.ToString("0.00") ج.م</td>
+                            <td style="font-weight: 700;">@o.Total.ToString("0.00") ج.م</td>
+                            <td style="color: var(--text-gray);">@(string.IsNullOrWhiteSpace(o.Notes) ? "-" : o.Notes)</td>
+                            <td>
+                                <div class="action-cell">
+                                    <a asp-action="Details" asp-route-id="@o.OrderId" class="action-btn action-btn-edit" title="عرض التفاصيل" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"></path>
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;">
+        @{
+            var maxPagesToShow = 5;
+            var startPage = Math.Max(1, pageNo - 2);
+            var endPage = Math.Min(totalPages, startPage + maxPagesToShow - 1);
+            if (endPage - startPage < maxPagesToShow - 1)
+            {
+                startPage = Math.Max(1, endPage - maxPagesToShow + 1);
+            }
+        }
+
+        <div class="pagination-left" style="display:flex;align-items:center;gap:0.5rem;">
+            <form method="get" id="pageSizeForm" style="display:flex;align-items:center;gap:0.5rem;">
+                <input type="hidden" name="from" value="@from" />
+                <input type="hidden" name="to" value="@to" />
+                <input type="hidden" name="pageNo" value="1" />
+                <label style="color:var(--text-gray);">عرض</label>
+                <select name="pageSize" onchange="this.form.submit()" style="padding:0.25rem;">
+                    <option value="10" selected="@(pageSize == 10 ? "selected" : "")">10</option>
+                    <option value="25" selected="@(pageSize == 25 ? "selected" : "")">25</option>
+                    <option value="50" selected="@(pageSize == 50 ? "selected" : "")">50</option>
+                    <option value="100" selected="@(pageSize == 100 ? "selected" : "")">100</option>
+                </select>
+            </form>
+        </div>
+
+        <div class="pagination-center" style="display:flex;align-items:center;gap:0.25rem;">
+            <a asp-action="Index" asp-route-pageNo="@(pageNo - 1)" asp-route-pageSize="@pageSize" asp-route-from="@from" asp-route-to="@to" class="btn" style="pointer-events:@(pageNo <= 1 ? "none" : "auto");opacity:@(pageNo <= 1 ? "0.5" : "1");">&laquo; السابق</a>
+
+            @for (int p = startPage; p <= endPage; p++)
+            {
+                <a asp-action="Index" asp-route-pageNo="@p" asp-route-pageSize="@pageSize" asp-route-from="@from" asp-route-to="@to" class="btn" style="font-weight:@(p == pageNo ? "700" : "400");">@p</a>
+            }
+
+            <a asp-action="Index" asp-route-pageNo="@(pageNo + 1)" asp-route-pageSize="@pageSize" asp-route-from="@from" asp-route-to="@to" class="btn" style="pointer-events:@(pageNo >= totalPages ? "none" : "auto");opacity:@(pageNo >= totalPages ? "0.5" : "1");">التالي &raquo;</a>
+        </div>
+
+        <div class="pagination-right" style="color:var(--text-gray);">
+            @if (totalCount > 0)
+            {
+                <span>إظهار @(((pageNo - 1) * pageSize) + 1)-@Math.Min(pageNo * pageSize, totalCount) من @totalCount</span>
+            }
+            else
+            {
+                <span>إظهار @modelCount من النتائج</span>
+            }
+        </div>
+    </div>
+</div>
+

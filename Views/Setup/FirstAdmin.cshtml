@@ -1,0 +1,68 @@
+@model MagdyPOS.Models.FirstAdminRegistrationViewModel
+@{
+    Layout = "_LoginLayout";
+    ViewData["Title"] = "تهيئة النظام";
+}
+
+<div class="login-card">
+    <div class="login-brand">
+        <div class="login-logo">M</div>
+        <div>
+            <div class="login-brand-title">MagdyPOS</div>
+            <div class="login-brand-sub">إعداد أول مدير وبيانات المؤسسة</div>
+        </div>
+    </div>
+
+    <h1 class="login-heading">تهيئة أول مرة</h1>
+
+    <form asp-action="FirstAdmin" asp-controller="Setup" method="post" class="login-form">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="login-validation-summary"></div>
+
+        <div class="login-field">
+            <label asp-for="FullName"></label>
+            <input asp-for="FullName" class="login-input" autocomplete="name" autofocus />
+            <span asp-validation-for="FullName" class="login-field-error"></span>
+        </div>
+
+        <div class="login-field">
+            <label asp-for="Email"></label>
+            <input asp-for="Email" class="login-input" autocomplete="email" />
+            <span asp-validation-for="Email" class="login-field-error"></span>
+        </div>
+
+        <div class="login-field">
+            <label asp-for="Password"></label>
+            <input asp-for="Password" class="login-input" autocomplete="new-password" />
+            <span asp-validation-for="Password" class="login-field-error"></span>
+        </div>
+
+        <div class="login-field">
+            <label asp-for="ConfirmPassword"></label>
+            <input asp-for="ConfirmPassword" class="login-input" autocomplete="new-password" />
+            <span asp-validation-for="ConfirmPassword" class="login-field-error"></span>
+        </div>
+
+        <div class="login-field">
+            <label asp-for="OrganizationName"></label>
+            <input asp-for="OrganizationName" class="login-input" />
+            <span asp-validation-for="OrganizationName" class="login-field-error"></span>
+        </div>
+
+        <div class="login-field">
+            <label asp-for="OrganizationPhone"></label>
+            <input asp-for="OrganizationPhone" class="login-input" />
+            <span asp-validation-for="OrganizationPhone" class="login-field-error"></span>
+        </div>
+
+        <div class="login-field">
+            <label asp-for="OrganizationAddress"></label>
+            <textarea asp-for="OrganizationAddress" class="login-input" rows="3"></textarea>
+            <span asp-validation-for="OrganizationAddress" class="login-field-error"></span>
+        </div>
+
+        <button type="submit" class="login-submit">إنشاء المدير وبدء الاستخدام</button>
+    </form>
+</div>
+
+<partial name="_ValidationScriptsPartial" />

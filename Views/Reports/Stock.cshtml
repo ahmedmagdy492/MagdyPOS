@@ -1,0 +1,180 @@
+@model StockReportViewModel
+@using MagdyPOS.Authorization
+
+<div class="admin-page-head">
+    <div>
+        <h1>تقارير المخزون</h1>
+        <p>ملخص سريع للخامات وحالة المخزون.</p>
+    </div>
+</div>
+
+@{
+    var q = (ViewBag.Query as string) ?? string.Empty;
+    var lowOnly = (ViewBag.LowOnly as bool?) ?? false;
+
+    var query = Context.Request.Query;
+    int pageNo = 1;
+    int pageSize = 20;
+    if (!string.IsNullOrEmpty(query["pageNo"])) int.TryParse(query["pageNo"], out pageNo);
+    if (!string.IsNullOrEmpty(query["pageSize"])) int.TryParse(query["pageSize"], out pageSize);
+    if (pageNo < 1) pageNo = 1;
+    if (pageSize < 1) pageSize = 20;
+
+    int totalCount = 0;
+    if (ViewBag.TotalCount != null) int.TryParse(ViewBag.TotalCount.ToString(), out totalCount);
+
+    var modelCount = Model.Materials?.Count ?? 0;
+    var totalPages = totalCount > 0
+        ? (int)Math.Ceiling(totalCount / (double)pageSize)
+        : ((modelCount == pageSize) ? pageNo + 1 : pageNo);
+}
+
+<div class="stats-grid" style="margin-bottom:1rem;">
+    <div class="stat-card">
+        <div class="stat-header">
+            <div>
+                <div class="stat-label">إجمالي الخامات</div>
+                <div class="stat-value">@Model.TotalMaterialsCount.ToString("N0")</div>
+            </div>
+            <div class="stat-icon gray">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m7.5 4.27 9 5.15"></path>
+                    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-change"><span>عدد الأصناف المسجلة في الخامات</span></div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <div>
+                <div class="stat-label">منخفضة المخزون</div>
+                <div class="stat-value">@Model.LowStockMaterialsCount.ToString("N0")</div>
+            </div>
+            <div class="stat-icon red">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                    <path d="M12 9v4"></path>
+                    <path d="M12 17h.01"></path>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-change"><span>كمية أقل من حد التنبيه</span></div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;flex-wrap:wrap;">
+            <div>
+                <h2 class="card-title">ملخص الخامات</h2>
+                <p style="color:var(--text-gray);margin-top:0.25rem;">يمكنك البحث بالاسم أو الكود، وتصفية الخامات منخفضة المخزون.</p>
+            </div>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                <a asp-controller="Reports" asp-action="Movements" class="btn-admin-header">عرض حركات المخزون</a>
+            </div>
+        </div>
+
+        <form method="get" style="display:flex;gap:0.5rem;align-items:center;margin-top:0.75rem;flex-wrap:wrap;">
+            <input type="hidden" name="pageNo" value="1" />
+            <input type="hidden" name="pageSize" value="@pageSize" />
+            <input name="q" class="form-control" style="max-width:320px;" placeholder="بحث (اسم/كود)" value="@q" />
+            <label style="display:flex;align-items:center;gap:0.4rem;color:var(--text-gray);">
+                <input type="checkbox" name="lowOnly" value="true" @(lowOnly ? "checked" : "") />
+                منخفض فقط
+            </label>
+            <button type="submit" class="btn-admin-header">تصفية</button>
+        </form>
+    </div>
+
+    <div class="card-body" style="padding: 0;">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>الخامة</th>
+                        <th>الكود</th>
+                        <th>الكمية</th>
+                        <th>حد التنبيه</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @if (Model.Materials.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5" style="padding: 1rem; color: var(--text-gray); text-align:center;">
+                            لا توجد بيانات مطابقة.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var m in Model.Materials)
+                    {
+                        var badge = m.IsLowStock ? "badge-danger" : "badge success";
+                        <tr>
+                            <td style="font-weight:600;">@m.Name</td>
+                            <td style="color:var(--text-gray);">@m.Id</td>
+                            <td style="font-weight:700;">@m.Quantity.ToString("N2") @m.UnitSymbol</td>
+                            <td style="color:var(--text-gray);">@m.AlertLimit.ToString("N2") @m.UnitSymbol</td>
+                            <td><span class="@badge">@(m.IsLowStock ? "منخفض" : "متوفر")</span></td>
+                        </tr>
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;">
+        @{
+            var maxPagesToShow = 5;
+            var startPage = Math.Max(1, pageNo - 2);
+            var endPage = Math.Min(totalPages, startPage + maxPagesToShow - 1);
+            if (endPage - startPage < maxPagesToShow - 1)
+            {
+                startPage = Math.Max(1, endPage - maxPagesToShow + 1);
+            }
+        }
+
+        <div class="pagination-left" style="display:flex;align-items:center;gap:0.5rem;">
+            <form method="get" style="display:flex;align-items:center;gap:0.5rem;">
+                <input type="hidden" name="q" value="@q" />
+                <input type="hidden" name="lowOnly" value="@(lowOnly ? "true" : "false")" />
+                <input type="hidden" name="pageNo" value="1" />
+                <label style="color:var(--text-gray);">عرض</label>
+                <select name="pageSize" onchange="this.form.submit()" style="padding:0.25rem;">
+                    <option value="10" selected="@(pageSize == 10 ? "selected" : "")">10</option>
+                    <option value="25" selected="@(pageSize == 25 ? "selected" : "")">25</option>
+                    <option value="50" selected="@(pageSize == 50 ? "selected" : "")">50</option>
+                    <option value="100" selected="@(pageSize == 100 ? "selected" : "")">100</option>
+                </select>
+            </form>
+        </div>
+
+        <div class="pagination-center" style="display:flex;align-items:center;gap:0.25rem;">
+            <a asp-action="Stock" asp-route-pageNo="@(pageNo - 1)" asp-route-pageSize="@pageSize" asp-route-q="@q" asp-route-lowOnly="@lowOnly" class="btn" style="pointer-events:@(pageNo <= 1 ? "none" : "auto");opacity:@(pageNo <= 1 ? "0.5" : "1");">&laquo; السابق</a>
+
+            @for (int p = startPage; p <= endPage; p++)
+            {
+                <a asp-action="Stock" asp-route-pageNo="@p" asp-route-pageSize="@pageSize" asp-route-q="@q" asp-route-lowOnly="@lowOnly" class="btn" style="font-weight:@(p == pageNo ? "700" : "400");">@p</a>
+            }
+
+            <a asp-action="Stock" asp-route-pageNo="@(pageNo + 1)" asp-route-pageSize="@pageSize" asp-route-q="@q" asp-route-lowOnly="@lowOnly" class="btn" style="pointer-events:@(pageNo >= totalPages ? "none" : "auto");opacity:@(pageNo >= totalPages ? "0.5" : "1");">التالي &raquo;</a>
+        </div>
+
+        <div class="pagination-right" style="color:var(--text-gray);">
+            @if (totalCount > 0)
+            {
+                <span>إظهار @(((pageNo - 1) * pageSize) + 1)-@Math.Min(pageNo * pageSize, totalCount) من @totalCount</span>
+            }
+            else
+            {
+                <span>إظهار @modelCount من النتائج</span>
+            }
+        </div>
+    </div>
+</div>
+

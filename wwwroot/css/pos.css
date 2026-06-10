@@ -1,0 +1,471 @@
+/* Sales POS — scoped styles (layout uses site.css variables) */
+
+.pos-page {
+  --pos-card-shadow: var(--shadow-sm);
+  --pos-card-shadow-hover: var(--shadow-md);
+}
+
+.pos-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  box-shadow: var(--pos-card-shadow);
+}
+
+.pos-page-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.pos-page-header p {
+  margin: 4px 0 0;
+  font-size: 0.875rem;
+  color: var(--text-gray);
+}
+
+.pos-date-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pos-date-block .pos-date-label {
+  font-size: 0.75rem;
+  color: var(--text-gray);
+}
+
+.pos-date-block .pos-date-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.pos-date-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), #3b82f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.pos-main-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 400px) 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.pos-cart-section {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--pos-card-shadow);
+  overflow: hidden;
+  position: sticky;
+  top: 88px;
+}
+
+.pos-cart-head {
+  background: linear-gradient(to left, var(--primary), #3b82f6);
+  color: #fff;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pos-cart-head h3 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.pos-cart-count {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.pos-cart-items {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pos-cart-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgb(249, 250, 251);
+  border-radius: 12px;
+  padding: 12px;
+  animation: pos-slide-in 0.25s ease;
+}
+
+@keyframes pos-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.pos-cart-item-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.pos-cart-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.pos-cart-item-body h5 {
+  margin: 0 0 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.pos-cart-item-body .pos-unit-price {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-gray);
+}
+
+.pos-qty-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pos-qty-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  transition: transform 0.15s ease;
+}
+
+.pos-qty-btn:active {
+  transform: scale(0.92);
+}
+
+.pos-qty-minus {
+  background: var(--error);
+}
+
+.pos-qty-plus {
+  background: var(--success);
+}
+
+.pos-qty-value {
+  min-width: 24px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.pos-remove-line {
+  border: none;
+  background: transparent;
+  color: var(--error);
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pos-remove-line:hover {
+  background: rgb(254, 242, 242);
+}
+
+.pos-cart-summary {
+  border-top: 1px solid var(--border);
+  padding: 16px;
+  background: rgba(249, 250, 251, 0.6);
+}
+
+.pos-cart-summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 0.875rem;
+  color: var(--text-gray);
+}
+
+.pos-cart-summary-row strong,
+.pos-cart-summary-row .pos-money {
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.pos-cart-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.pos-cart-total-row .pos-grand-total {
+  color: var(--primary);
+}
+
+.pos-cart-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.pos-btn-danger,
+.pos-btn-success {
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  transition: transform 0.15s ease, box-shadow 0.2s;
+}
+
+.pos-btn-danger {
+  background: var(--error);
+}
+
+.pos-btn-success {
+  background: var(--success);
+}
+
+.pos-btn-danger:hover,
+.pos-btn-success:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.pos-products-section .pos-search-wrap {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--pos-card-shadow);
+}
+
+.pos-search-field {
+  position: relative;
+}
+
+.pos-search-field input {
+  width: 100%;
+  padding: 12px 44px 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  font-size: 0.9375rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.pos-search-field input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.pos-search-field svg {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: var(--text-gray);
+  pointer-events: none;
+}
+
+.pos-products-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .pos-products-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .pos-products-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.pos-product-card {
+  border: 1px solid var(--border);
+  background: var(--bg-white);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--pos-card-shadow);
+  cursor: pointer;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 160px;
+  font-family: inherit;
+  color: inherit;
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+
+.pos-product-card:hover {
+  box-shadow: var(--pos-card-shadow-hover);
+}
+
+.pos-product-card:active {
+  transform: scale(0.98);
+}
+
+.pos-product-card.is-hidden {
+  display: none;
+}
+
+.pos-product-card .pos-emoji {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.pos-product-card h4 {
+  margin: 0 0 6px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.pos-product-card .pos-cat {
+  margin: 0 0 12px;
+  font-size: 0.75rem;
+  color: var(--text-gray);
+}
+
+.pos-product-card .pos-price-pill {
+  width: 100%;
+  background: linear-gradient(to left, var(--primary), #3b82f6);
+  color: #fff;
+  text-align: center;
+  padding: 8px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.pos-cart-empty {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--text-gray);
+  font-size: 0.875rem;
+}
+
+.pos-custom-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pos-custom-scroll::-webkit-scrollbar-track {
+  background: rgb(241, 245, 249);
+  border-radius: 10px;
+}
+
+.pos-custom-scroll::-webkit-scrollbar-thumb {
+  background: rgb(203, 213, 225);
+  border-radius: 10px;
+}
+
+#posReceipt {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #posReceipt,
+  #posReceipt * {
+    visibility: visible;
+  }
+
+  #posReceipt {
+    display: block;
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 80mm;
+    padding: 10mm;
+    font-size: 12px;
+    line-height: 1.45;
+    font-family: Cairo, Arial, sans-serif;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .pos-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pos-cart-section {
+    position: static;
+    order: 1;
+  }
+
+  .pos-products-section {
+    order: 2;
+  }
+}

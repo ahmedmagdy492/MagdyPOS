@@ -1,0 +1,146 @@
+@model IEnumerable<Unit>
+
+<form style="display:none">
+    @Html.AntiForgeryToken()
+</form>
+
+<div class="admin-page-head">
+    <div>
+        <h1>وحدات القياس</h1>
+        <p>إدارة وحدات الوزن والحجم والعدد المستخدمة في النظام.</p>
+    </div>
+    <button type="button" id="btnOpenAddUnit" class="btn-admin-header">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        إضافة وحدة
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">قائمة الوحدات</h2>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>اسم الوحدة</th>
+                        <th>الرمز</th>
+                        <th>ملاحظات</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="unitsTableBody">
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="9" style="padding: 1rem; color: var(--text-gray); text-align:center;">
+                            لا توجد وحدات حتى الآن.
+                        </td>
+                    </tr>
+                }
+                else {
+                    @foreach (var unit in Model)
+                    {
+                        <tr data-id="@unit.Id" data-name="@unit.Name" data-symbol="@unit.Symbol" data-notes="@(unit.Notes ?? "")">
+                            <td style="font-weight: 600;">@unit.Name</td>
+                            <td style="color: var(--text-gray);">@unit.Symbol</td>
+                            <td style="color: var(--text-gray);">@(string.IsNullOrWhiteSpace(unit.Notes) ? "-" : unit.Notes)</td>
+                            <td>
+                                <div class="action-cell">
+                                    <button type="button" class="action-btn action-btn-edit" title="تعديل">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    </button>
+                                    <button type="button" class="action-btn action-btn-delete" title="حذف">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="addUnitModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-content__head">
+            <h2 class="modal-content__title">إضافة وحدة</h2>
+            <button type="button" class="modal-close-btn" data-close-modal="addUnitModal" aria-label="إغلاق">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+        <form id="addUnitForm">
+            <div class="admin-modal-grid">
+                <div>
+                    <label class="form-label">اسم الوحدة <span style="color: var(--error);">*</span></label>
+                    <input type="text" id="unitName" class="form-input" required />
+                </div>
+                <div>
+                    <label class="form-label">الرمز <span style="color: var(--error);">*</span></label>
+                    <input type="text" id="unitSymbol" class="form-input" required />
+                </div>
+                <div class="full-row">
+                    <label class="form-label">ملاحظات</label>
+                    <input type="text" id="unitNotes" class="form-input" placeholder="اختياري" />
+                </div>
+            </div>
+            <div class="admin-modal-actions">
+                <button type="submit" class="btn-modal-primary">حفظ</button>
+                <button type="button" class="btn-modal-secondary" data-close-modal="addUnitModal">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="editUnitModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-content__head">
+            <h2 class="modal-content__title">تعديل وحدة</h2>
+            <button type="button" class="modal-close-btn" data-close-modal="editUnitModal" aria-label="إغلاق">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+        <form id="editUnitForm">
+            <div class="admin-modal-grid">
+                <div>
+                    <label class="form-label">اسم الوحدة <span style="color: var(--error);">*</span></label>
+                    <input type="text" id="editUnitName" class="form-input" required />
+                </div>
+                <div>
+                    <label class="form-label">الرمز <span style="color: var(--error);">*</span></label>
+                    <input type="text" id="editUnitSymbol" class="form-input" required />
+                </div>
+                <div class="full-row">
+                    <label class="form-label">ملاحظات</label>
+                    <input type="text" id="editUnitNotes" class="form-input" />
+                </div>
+            </div>
+            <div class="admin-modal-actions">
+                <button type="submit" class="btn-modal-primary">حفظ التعديلات</button>
+                <button type="button" class="btn-modal-secondary" data-close-modal="editUnitModal">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="deleteUnitModal" class="modal-overlay">
+    <div class="modal-content modal-narrow">
+        <div class="text-center">
+            <div class="delete-modal-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            </div>
+            <h2 class="modal-content__title" style="text-align: center; width: 100%;">حذف الوحدة</h2>
+            <p style="color: var(--text-gray); margin: 0 0 1.5rem;">هل أنت متأكد من حذف <span id="deleteUnitName" style="font-weight: 600; color: var(--text-dark);"></span>؟</p>
+            <div class="admin-modal-actions">
+                <button type="button" id="btnConfirmDeleteUnit" class="btn-modal-danger">حذف</button>
+                <button type="button" class="btn-modal-secondary" data-close-modal="deleteUnitModal">إلغاء</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/admin-crud-pages.js" asp-append-version="true"></script>

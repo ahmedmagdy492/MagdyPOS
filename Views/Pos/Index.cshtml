@@ -1,0 +1,149 @@
+@model PosIndexViewModel
+@{
+    var taxPct = (int)Math.Round(Model.TaxRate * 100);
+}
+<link rel="stylesheet" href="~/css/pos.css" asp-append-version="true" />
+
+<div
+    id="posRoot"
+    class="pos-page no-print"
+    data-tax-rate="@Model.TaxRate.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+    <header class="pos-page-header">
+        <div>
+            <h2>نقطة البيع</h2>
+            <p>اختر المنتجات لإضافتها للسلة</p>
+        </div>
+        <div class="pos-date-block">
+            <div>
+                <p class="pos-date-label">التاريخ</p>
+                <p id="posCurrentDate" class="pos-date-value"></p>
+            </div>
+            <div class="pos-date-icon" aria-hidden="true">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+        </div>
+    </header>
+
+    <div class="pos-main-grid">
+        <section class="pos-cart-section" aria-label="السلة">
+            <div class="pos-cart-head">
+                <h3>
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    السلة
+                </h3>
+                <span id="posCartCount" class="pos-cart-count">0 عناصر</span>
+            </div>
+            <div id="posCartItems" class="pos-cart-items pos-custom-scroll"></div>
+            <div class="pos-cart-summary">
+                <div class="pos-cart-summary-row">
+                    <span>المجموع الفرعي</span>
+                    <span id="posSubtotal" class="pos-money">0.00 ج.م</span>
+                </div>
+                <div class="pos-cart-summary-row">
+                    <span>الضريبة (@taxPct%)</span>
+                    <span id="posTax" class="pos-money">0.00 ج.م</span>
+                </div>
+                <div class="pos-cart-total-row">
+                    <div class="form-group" style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+                        <label style="white-space:nowrap; margin:0;">طريقة الدفع</label>
+                        <select id="posPaymentMethod" class="form-select" style="flex:1;">
+                            <option value="1">نقدي</option>
+                            <option value="0">بطاقة</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">بقشيش <span style="color: var(--error);"></span></label>
+                    <input placeholder="0.0" type="number" id="tipsField" class="form-input" min="0" />
+                </div>
+
+                <div class="pos-cart-total-row">
+                    <span>الإجمالي</span>
+                    <span id="posTotal" class="pos-grand-total">0.00 ج.م</span>
+                </div>
+                <div class="pos-cart-actions">
+                    <button type="button" id="posClearCart" class="pos-btn-danger">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        مسح السلة
+                    </button>
+                    <button type="button" id="posCheckoutBtn" class="pos-btn-success">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                        دفع وطباعة
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="pos-products-section">
+            <div class="pos-search-wrap">
+                <div class="pos-search-field">
+                    <input type="search" id="posSearchProduct" placeholder="ابحث عن منتج..." autocomplete="off" value="@Model.ProductsGrid.Query" />
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+            </div>
+            <div id="posProductsGridWrap">
+                <partial name="_ProductsGrid" model="Model.ProductsGrid" />
+            </div>
+        </section>
+    </div>
+</div>
+
+<div id="posReceipt"
+     data-store-name="@Model.StoreName"
+     data-store-address="@Model.StoreAddress"
+     data-store-phone="@Model.StorePhone"
+     data-shift-label="@Model.ShiftLabel"
+     data-cashier="@Model.CashierName">
+    <div style="text-align: center; margin-bottom: 15px;">
+        <h2 class="pos-rcpt-store" style="font-size: 18px; font-weight: bold; margin: 0 0 5px 0;"></h2>
+        <p class="pos-rcpt-addr" style="margin: 0; font-size: 11px;"></p>
+        <p class="pos-rcpt-phone" style="margin: 0; font-size: 11px;"></p>
+        <p class="pos-rcpt-shift-label" style="margin: 0; font-size: 11px;"></p>
+    </div>
+    <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 8px 0; margin-bottom: 10px; font-size: 11px;">
+        <div style="display: flex; justify-content: space-between;"><span>رقم الفاتورة:</span><span class="pos-rcpt-inv"></span></div>
+        <div style="display: flex; justify-content: space-between;"><span>التاريخ:</span><span class="pos-rcpt-date"></span></div>
+        <div style="display: flex; justify-content: space-between;"><span>الوقت:</span><span class="pos-rcpt-time"></span></div>
+        <div style="display: flex; justify-content: space-between;"><span>الكاشير:</span><span class="pos-rcpt-cashier"></span></div>
+    </div>
+    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 10px;">
+        <thead>
+            <tr style="border-bottom: 1px solid #000;">
+                <th style="text-align: right; padding: 4px 0;">الصنف</th>
+                <th style="text-align: center; padding: 4px 0;">الكمية</th>
+                <th style="text-align: left; padding: 4px 0;">السعر</th>
+                <th style="text-align: left; padding: 4px 0;">الإجمالي</th>
+            </tr>
+        </thead>
+        <tbody class="pos-rcpt-lines"></tbody>
+    </table>
+    <div style="border-top: 1px dashed #000; padding-top: 8px; font-size: 12px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>المجموع الفرعي:</span>
+            <span class="pos-rcpt-sub"></span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>الضريبة (@taxPct%):</span>
+            <span class="pos-rcpt-tax"></span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; border-top: 1px solid #000; padding-top: 6px; margin-top: 6px;">
+            <span>الإجمالي:</span>
+            <span class="pos-rcpt-total"></span>
+        </div>
+    </div>
+    <div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #000; font-size: 11px;">
+        <p style="margin: 5px 0;">شكراً لزيارتكم</p>
+        <p style="margin: 5px 0;">نتطلع لخدمتكم مرة أخرى</p>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/pos.js" asp-append-version="true"></script>
+}

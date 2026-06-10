@@ -1,0 +1,211 @@
+@model StockMovementsReportViewModel
+
+<div class="admin-page-head">
+    <div>
+        <h1>حركات المخزون</h1>
+        <p>سجل العمليات (دخول/خروج) للخامات والمنتجات.</p>
+    </div>
+</div>
+
+@{
+    var q = (ViewBag.Query as string) ?? string.Empty;
+    var from = (ViewBag.From as string) ?? "";
+    var to = (ViewBag.To as string) ?? "";
+    var itemType = ViewBag.ItemType;
+    var kind = ViewBag.Kind;
+
+    var query = Context.Request.Query;
+    int pageNo = 1;
+    int pageSize = 20;
+    if (!string.IsNullOrEmpty(query["pageNo"])) int.TryParse(query["pageNo"], out pageNo);
+    if (!string.IsNullOrEmpty(query["pageSize"])) int.TryParse(query["pageSize"], out pageSize);
+    if (pageNo < 1) pageNo = 1;
+    if (pageSize < 1) pageSize = 20;
+
+    int totalCount = 0;
+    if (ViewBag.TotalCount != null) int.TryParse(ViewBag.TotalCount.ToString(), out totalCount);
+    var modelCount = Model.Movements?.Count ?? 0;
+    var totalPages = totalCount > 0
+        ? (int)Math.Ceiling(totalCount / (double)pageSize)
+        : ((modelCount == pageSize) ? pageNo + 1 : pageNo);
+}
+
+<div class="card">
+    <div class="card-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;flex-wrap:wrap;">
+            <div>
+                <h2 class="card-title">سجل الحركات</h2>
+                <p style="color:var(--text-gray);margin-top:0.25rem;">استخدم الفلاتر للوصول بسرعة للحركات المطلوبة.</p>
+                @if (ViewBag.DateFilterError != null)
+                {
+                    <p style="color:red;margin-top:0.25rem;">@(ViewBag.DateFilterError)</p>
+                }
+            </div>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                <a asp-controller="Reports" asp-action="Stock" class="btn-admin-header">ملخص المخزون</a>
+            </div>
+        </div>
+
+        <form method="get" style="display:flex;gap:0.5rem;align-items:center;margin-top:0.75rem;flex-wrap:wrap;">
+            <input type="hidden" name="pageNo" value="1" />
+            <input type="hidden" name="pageSize" value="@pageSize" />
+
+            <div class="date-filter">
+                <label style="color:var(--text-gray);font-size:0.9rem;margin-right:0.25rem;">من</label>
+                <input name="from" type="date" class="form-control" value="@from" />
+            </div>
+
+            <div class="date-filter">
+                <label style="color:var(--text-gray);font-size:0.9rem;margin-right:0.25rem;margin-left:0.5rem;">إلى</label>
+                <input name="to" type="date" class="form-control" value="@to" />
+            </div>
+
+            <select name="itemType" class="form-control" style="max-width:180px;">
+                <option value="">الكل (نوع الصنف)</option>
+                <option value="Material" selected="@(itemType?.ToString() == "Material" ? "selected" : "")">خامة</option>
+                <option value="Product" selected="@(itemType?.ToString() == "Product" ? "selected" : "")">منتج</option>
+            </select>
+
+            <select name="kind" class="form-control" style="max-width:180px;">
+                <option value="">الكل (نوع الحركة)</option>
+                <option value="In" selected="@(kind?.ToString() == "In" ? "selected" : "")">دخول</option>
+                <option value="Out" selected="@(kind?.ToString() == "Out" ? "selected" : "")">خروج</option>
+                <option value="Adjust" selected="@(kind?.ToString() == "Adjust" ? "selected" : "")">تعديل</option>
+            </select>
+
+            <input name="q" class="form-control" style="max-width:320px;" placeholder="بحث (اسم/كود/مستخدم)" value="@q" />
+            <button type="submit" class="btn-admin-header">تصفية</button>
+        </form>
+    </div>
+
+    <div class="card-body" style="padding: 0;">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>الصنف</th>
+                        <th>الكود</th>
+                        <th>الحركة</th>
+                        <th>الكمية</th>
+                        <th>قبل</th>
+                        <th>بعد</th>
+                        <th>السبب</th>
+                        <th>المستخدم</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @if (Model.Movements.Count == 0)
+                {
+                    <tr>
+                        <td colspan="9" style="padding: 1rem; color: var(--text-gray); text-align:center;">
+                            لا توجد حركات ضمن الفترة المحددة.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var m in Model.Movements)
+                    {
+                        var badge = m.Kind == StockMovementKind.In
+                            ? "badge success"
+                            : (m.Kind == StockMovementKind.Out ? "badge-danger" : "badge-muted");
+                        var qtyText = m.QuantityDelta >= 0 ? $"+{m.QuantityDelta:N2}" : $"{m.QuantityDelta:N2}";
+                        <tr>
+                            <td style="color:var(--text-gray);">@m.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td style="font-weight:600;">@m.ItemName</td>
+                            <td style="color:var(--text-gray);">@m.ItemId</td>
+                            <td><span class="@badge">@(m.Kind == StockMovementKind.In ? "دخول" : (m.Kind == StockMovementKind.Out ? "خروج" : "تعديل"))</span></td>
+                            <td style="font-weight:700;">@qtyText</td>
+                            <td style="color:var(--text-gray);">@(m.QuantityBefore.HasValue ? m.QuantityBefore.Value.ToString("N2") : "—")</td>
+                            <td style="color:var(--text-gray);">@(m.QuantityAfter.HasValue ? m.QuantityAfter.Value.ToString("N2") : "—")</td>
+                            <td style="color:var(--text-gray);">@(string.IsNullOrWhiteSpace(m.Reason) ? "—" : m.Reason)</td>
+                            <td style="color:var(--text-gray);">@(string.IsNullOrWhiteSpace(m.UserName) ? "—" : m.UserName)</td>
+                        </tr>
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;">
+        @{
+            var maxPagesToShow = 5;
+            var startPage = Math.Max(1, pageNo - 2);
+            var endPage = Math.Min(totalPages, startPage + maxPagesToShow - 1);
+            if (endPage - startPage < maxPagesToShow - 1)
+            {
+                startPage = Math.Max(1, endPage - maxPagesToShow + 1);
+            }
+        }
+
+        <div class="pagination-left" style="display:flex;align-items:center;gap:0.5rem;">
+            <form method="get" style="display:flex;align-items:center;gap:0.5rem;">
+                <input type="hidden" name="from" value="@from" />
+                <input type="hidden" name="to" value="@to" />
+                <input type="hidden" name="itemType" value="@(itemType?.ToString() ?? "")" />
+                <input type="hidden" name="kind" value="@(kind?.ToString() ?? "")" />
+                <input type="hidden" name="q" value="@q" />
+                <input type="hidden" name="pageNo" value="1" />
+                <label style="color:var(--text-gray);">عرض</label>
+                <select name="pageSize" onchange="this.form.submit()" style="padding:0.25rem;">
+                    <option value="10" selected="@(pageSize == 10 ? "selected" : "")">10</option>
+                    <option value="25" selected="@(pageSize == 25 ? "selected" : "")">25</option>
+                    <option value="50" selected="@(pageSize == 50 ? "selected" : "")">50</option>
+                    <option value="100" selected="@(pageSize == 100 ? "selected" : "")">100</option>
+                </select>
+            </form>
+        </div>
+
+        <div class="pagination-center" style="display:flex;align-items:center;gap:0.25rem;">
+            <a asp-action="Movements"
+               asp-route-pageNo="@(pageNo - 1)"
+               asp-route-pageSize="@pageSize"
+               asp-route-from="@from"
+               asp-route-to="@to"
+               asp-route-itemType="@(itemType?.ToString() ?? "")"
+               asp-route-kind="@(kind?.ToString() ?? "")"
+               asp-route-q="@q"
+               class="btn"
+               style="pointer-events:@(pageNo <= 1 ? "none" : "auto");opacity:@(pageNo <= 1 ? "0.5" : "1");">&laquo; السابق</a>
+
+            @for (int p = startPage; p <= endPage; p++)
+            {
+                <a asp-action="Movements"
+                   asp-route-pageNo="@p"
+                   asp-route-pageSize="@pageSize"
+                   asp-route-from="@from"
+                   asp-route-to="@to"
+                   asp-route-itemType="@(itemType?.ToString() ?? "")"
+                   asp-route-kind="@(kind?.ToString() ?? "")"
+                   asp-route-q="@q"
+                   class="btn"
+                   style="font-weight:@(p == pageNo ? "700" : "400");">@p</a>
+            }
+
+            <a asp-action="Movements"
+               asp-route-pageNo="@(pageNo + 1)"
+               asp-route-pageSize="@pageSize"
+               asp-route-from="@from"
+               asp-route-to="@to"
+               asp-route-itemType="@(itemType?.ToString() ?? "")"
+               asp-route-kind="@(kind?.ToString() ?? "")"
+               asp-route-q="@q"
+               class="btn"
+               style="pointer-events:@(pageNo >= totalPages ? "none" : "auto");opacity:@(pageNo >= totalPages ? "0.5" : "1");">التالي &raquo;</a>
+        </div>
+
+        <div class="pagination-right" style="color:var(--text-gray);">
+            @if (totalCount > 0)
+            {
+                <span>إظهار @(((pageNo - 1) * pageSize) + 1)-@Math.Min(pageNo * pageSize, totalCount) من @totalCount</span>
+            }
+            else
+            {
+                <span>إظهار @modelCount من النتائج</span>
+            }
+        </div>
+    </div>
+</div>
+

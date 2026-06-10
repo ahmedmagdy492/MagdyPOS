@@ -1,0 +1,248 @@
+@model IEnumerable<Material>
+@{
+    var units = ViewBag.Units as IEnumerable<Unit> ?? Enumerable.Empty<Unit>();
+
+    var q = Context.Request.Query;
+    int pageNo = 1;
+    int pageSize = 10;
+    if (!string.IsNullOrEmpty(q["pageNo"])) int.TryParse(q["pageNo"], out pageNo);
+    if (!string.IsNullOrEmpty(q["pageSize"])) int.TryParse(q["pageSize"], out pageSize);
+    if (pageNo < 1) pageNo = 1;
+    if (pageSize < 1) pageSize = 10;
+
+    int totalCount = 0;
+    if (ViewBag.TotalCount != null)
+    {
+        int.TryParse(ViewBag.TotalCount.ToString(), out totalCount);
+    }
+
+    var modelCount = Model?.Count() ?? 0;
+    int totalPages;
+    if (totalCount > 0)
+    {
+        totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+    }
+    else
+    {
+        totalPages = (modelCount == pageSize) ? pageNo + 1 : pageNo;
+    }
+}
+
+<link rel="stylesheet" href="~/css/materials.css">
+
+<form style="display:none">
+    @Html.AntiForgeryToken()
+</form>
+
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div class="admin-page-head">
+        <div>
+            <h1>إدارة الخامات</h1>
+            <p>إدارة ومتابعة مخزون المواد الخام (إضافة الخامات تتم من المصروفات فقط)</p>
+        </div>
+    </div>
+    <a asp-controller="Expenses" asp-action="Create" class="btn-primary px-6 py-2.5 rounded-xl font-semibold flex items-center gap-2 w-full sm:w-auto justify-center" style="text-decoration:none;">
+        إضافة خامة من المصروفات
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">قائمة الخامات</h2>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>اسم الخامة</th>
+                    <th>الكود</th>
+                    <th>الوحدة</th>
+                    <th>الكمية المتاحة</th>
+                    <th>الكمية الأصلية</th>
+                    <th>تاريخ الإضافة</th>
+                    <th>حد التنبيه</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="materialsTableBody">
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="8" style="padding: 1rem; color: var(--text-gray); text-align:center;">
+                        لا توجد خامات بعد.
+                    </td>
+                </tr>
+            }
+            else {
+                @foreach (var m in Model)
+                {
+                    var unitName = m.Unit?.Name ?? "";
+                    var unitSymbol = m.Unit?.Symbol ?? "";
+                    var badgeClass = m.Quantity <= m.AlertLimit ? "badge-danger" : "badge-muted";
+                    <tr data-id="@m.Id"
+                        data-name="@m.Name"
+                        data-code="@m.Id"
+                        data-unit-id="@m.UnitId"
+                        data-unit-name="@unitName"
+                        data-unit-symbol="@unitSymbol"
+                        data-qty="@m.Quantity"
+                        data-original-qty="@m.OriginalQuantity"
+                        data-created-at="@m.CreatedAt.ToString("yyyy-MM-dd")"
+                        data-alert="@m.AlertLimit">
+                        <td class="font-medium">@m.Name</td>
+                        <td class="text-[var(--text-gray)]">@m.Id</td>
+                        <td>@unitName</td>
+                        <td>
+                            <span class="@badgeClass">@m.Quantity @unitSymbol</span>
+                        </td>
+                        <td class="text-[var(--text-gray)]">@m.OriginalQuantity @unitSymbol</td>
+                        <td class="text-[var(--text-gray)]">@m.CreatedAt.ToString("yyyy-MM-dd")</td>
+                        <td class="text-[var(--text-gray)]">@m.AlertLimit @unitSymbol</td>
+                        <td>
+                            <div class="action-cell">
+                                <button type="button" class="action-btn action-btn-edit" title="تعديل">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                </button>
+                                <button type="button" class="action-btn action-btn-delete" title="حذف">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card-footer" style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;">
+    @{
+        var maxPagesToShow = 5;
+        var startPage = Math.Max(1, pageNo - 2);
+        var endPage = Math.Min(totalPages, startPage + maxPagesToShow - 1);
+        if (endPage - startPage < maxPagesToShow - 1)
+        {
+            startPage = Math.Max(1, endPage - maxPagesToShow + 1);
+        }
+    }
+
+    <div class="pagination-left" style="display:flex;align-items:center;gap:0.5rem;">
+        <form method="get" id="pageSizeForm" style="display:flex;align-items:center;gap:0.5rem;">
+            <input type="hidden" name="pageNo" value="1" />
+            <label style="color:var(--text-gray);">عرض</label>
+            <select name="pageSize" onchange="this.form.submit()" style="padding:0.25rem;">
+                <option value="10" selected="@(pageSize == 10 ? "selected" : "")">10</option>
+                <option value="25" selected="@(pageSize == 25 ? "selected" : "")">25</option>
+                <option value="50" selected="@(pageSize == 50 ? "selected" : "")">50</option>
+                <option value="100" selected="@(pageSize == 100 ? "selected" : "")">100</option>
+            </select>
+        </form>
+    </div>
+
+    <div class="pagination-center" style="display:flex;align-items:center;gap:0.25rem;">
+        <a asp-action="Index" asp-route-pageNo="@(pageNo - 1)" asp-route-pageSize="@pageSize" class="btn" style="pointer-events:@(pageNo <= 1 ? "none" : "auto");opacity:@(pageNo <= 1 ? "0.5" : "1");">&laquo; السابق</a>
+
+        @for (int p = startPage; p <= endPage; p++)
+        {
+            <a asp-action="Index" asp-route-pageNo="@p" asp-route-pageSize="@pageSize" class="btn" style="font-weight:@(p == pageNo ? "700" : "400");">@p</a>
+        }
+
+        <a asp-action="Index" asp-route-pageNo="@(pageNo + 1)" asp-route-pageSize="@pageSize" class="btn" style="pointer-events:@(pageNo >= totalPages ? "none" : "auto");opacity:@(pageNo >= totalPages ? "0.5" : "1");">التالي &raquo;</a>
+    </div>
+
+    <div class="pagination-right" style="color:var(--text-gray);">
+        @if (totalCount > 0)
+        {
+            <span>إظهار @(((pageNo - 1) * pageSize) + 1)-@Math.Min(pageNo * pageSize, totalCount) من @totalCount</span>
+        }
+        else
+        {
+            <span>إظهار @modelCount من النتائج</span>
+        }
+    </div>
+</div>
+
+<div id="editModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-content__head">
+            <h2 class="modal-content__title">تعديل الخامة</h2>
+            <button type="button" class="modal-close-btn" data-close-modal="editModal" aria-label="إغلاق">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <form id="editMaterialForm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">اسم الخامة <span class="text-[var(--error)]">*</span></label>
+                    <input type="text" id="editMaterialName" class="form-input" required>
+                </div>
+
+                <div>
+                    <label class="form-label">الكود <span class="text-[var(--error)]">*</span></label>
+                    <input type="text" id="editMaterialCode" class="form-input" readonly required>
+                </div>
+
+                <div>
+                    <label class="form-label">الوحدة <span class="text-[var(--error)]">*</span></label>
+                    <select id="editMaterialUnit" class="form-select" required>
+                        @foreach (var u in units)
+                        {
+                            <option value="@u.Id">@u.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label class="form-label">الكمية المتاحة <span class="text-[var(--error)]">*</span></label>
+                    <input type="number" id="editMaterialQty" class="form-input" min="0" step="0.01" required>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="form-label">حد التنبيه <span class="text-[var(--error)]">*</span></label>
+                    <input type="number" id="editMaterialAlert" class="form-input" min="0" step="0.01" required>
+                </div>
+            </div>
+
+            <div class="admin-modal-actions">
+                <button type="submit" class="btn-modal-primary">حفظ التعديلات</button>
+                <button type="button" data-close-modal="editModal" class="btn-modal-secondary">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-content modal-narrow">
+        <div class="text-center">
+            <div class="delete-modal-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+            </div>
+            <h2 class="text-xl font-bold text-[var(--text-dark)] mb-2">حذف الخامة</h2>
+            <p class="text-[var(--text-gray)] mb-6">هل أنت متأكد من حذف <span id="deleteMaterialName" class="font-semibold text-[var(--text-dark)]"></span>؟ لا يمكن التراجع عن هذا الإجراء.</p>
+
+            <div class="admin-modal-actions">
+                <button type="button" id="btnConfirmDelete" class="btn-modal-danger">حذف</button>
+                <button type="button" data-close-modal="deleteModal" class="btn-modal-secondary">إلغاء</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/admin-crud-pages.js" asp-append-version="true"></script>

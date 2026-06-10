@@ -1,0 +1,112 @@
+@model OrderDetailsViewModel
+
+<div class="admin-page-head">
+    <div>
+        <h1>تفاصيل الطلب</h1>
+        <p>عرض كامل لعناصر الطلب والبيانات المرتبطة به.</p>
+    </div>
+    <a asp-action="Index" class="btn-admin-header" style="text-decoration:none;">
+        رجوع للقائمة
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">معلومات الطلب</h2>
+    </div>
+    <div class="card-body">
+        <div class="admin-modal-grid">
+            <div>
+                <label class="form-label">رقم الطلب</label>
+                <div style="font-weight:700;">@Model.OrderNumber</div>
+            </div>
+            <div>
+                <label class="form-label">التاريخ</label>
+                <div>@Model.OrderDate.ToString("yyyy-MM-dd HH:mm")</div>
+            </div>
+            <div>
+                <label class="form-label">المستخدم</label>
+                <div>@Model.UserName</div>
+            </div>
+            <div>
+                <label class="form-label">طريقة الدفع</label>
+                <div>@(Model.PaymentMethod == 1 ? "نقدي" : "بطاقة")</div>
+            </div>
+            <div>
+                <label class="form-label">الخصم</label>
+                <div>@Model.Discount.ToString("0.00") ج.م</div>
+            </div>
+            <div>
+                <label class="form-label">الإجمالي</label>
+                <div style="font-weight:700;">@Model.Total.ToString("0.00") ج.م</div>
+            </div>
+            <div class="full-row">
+                <label class="form-label">ملاحظات</label>
+                <div style="color: var(--text-gray);">@(string.IsNullOrWhiteSpace(Model.Notes) ? "-" : Model.Notes)</div>
+            </div>
+
+            <div class="full-row">
+                <label class="form-label">بقشيش</label>
+                <div style="color: var(--text-gray);">@(Model.Tips) جنيه</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">عناصر الطلب</h2>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>المنتج</th>
+                        <th>الكود</th>
+                        <th>سعر الوحدة</th>
+                        <th>الكمية</th>
+                        <th>الإجمالي</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @if (!Model.Items.Any())
+                {
+                    <tr>
+                        <td colspan="5" style="padding: 1rem; color: var(--text-gray); text-align:center;">
+                            لا توجد عناصر داخل هذا الطلب.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td style="font-weight:600;">@item.ProductName</td>
+                            <td style="color: var(--text-gray);">@item.ProductId</td>
+                            <td>@item.UnitPrice.ToString("0.00") ج.م</td>
+                            <td>@item.Quantity</td>
+                            <td style="font-weight:700;">@item.LineTotal.ToString("0.00") ج.م</td>
+                        </tr>
+                    }
+                }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4" style="text-align:left; font-weight:600;">المجموع الفرعي</td>
+                        <td style="font-weight:600;">@Model.Subtotal.ToString("0.00") ج.م</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" style="text-align:left; font-weight:600;">الخصم</td>
+                        <td style="font-weight:600;">@Model.Discount.ToString("0.00") ج.م</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" style="text-align:left; font-weight:700;">الإجمالي النهائي</td>
+                        <td style="font-weight:700;">@Model.Total.ToString("0.00") ج.م</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

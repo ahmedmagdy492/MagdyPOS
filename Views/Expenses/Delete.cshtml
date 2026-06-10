@@ -1,0 +1,35 @@
+@model Expense
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">حذف مصروف</h2>
+    </div>
+    <div class="card-body" style="max-width:900px;">
+        @if (TempData["Error"] != null)
+        {
+            <div style="margin-bottom:1rem;color:#b42318;font-weight:700;">
+                @TempData["Error"]
+            </div>
+        }
+        <div style="margin-bottom:1rem;color:var(--text-gray);">
+            هل أنت متأكد من حذف المصروف التالي؟ إذا كان مرتبطاً بخامة فسيتم عكس تأثيره على المخزون.
+        </div>
+
+        <div style="display:grid;gap:0.5rem;">
+            <div><strong>#</strong> @Model.Id</div>
+            <div><strong>التاريخ:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</div>
+            <div><strong>العنوان:</strong> @Model.Title</div>
+            <div><strong>القيمة:</strong> <span style="font-weight:700;">@Model.Amount.ToString("0.00") ج.م</span></div>
+            <div><strong>الخامة:</strong> <span style="color:var(--text-gray);">@(Model.Material == null ? "-" : $"{Model.Material.Name} ({Model.Material.Id})")</span></div>
+            <div><strong>كمية الخامة:</strong> <span style="color:var(--text-gray);">@(Model.MaterialQuantity.HasValue ? Model.MaterialQuantity.Value.ToString("0.###") : "-")</span></div>
+        </div>
+
+        <form asp-action="Delete" method="post" style="margin-top:1.25rem;display:flex;gap:0.5rem;align-items:center;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn-admin-header" style="background:#b42318;">تأكيد الحذف</button>
+            <a asp-action="Index" class="btn">إلغاء</a>
+        </form>
+    </div>
+</div>
+

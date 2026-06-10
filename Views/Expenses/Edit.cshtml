@@ -1,0 +1,191 @@
+@model Expense
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">تعديل مصروف</h2>
+    </div>
+    <div class="card-body">
+        <form asp-action="Edit" method="post" style="display:grid;gap:1rem;max-width:720px;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div>
+                <label class="form-label">العنوان</label>
+                <input asp-for="Title" class="form-input" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                <div>
+                    <label class="form-label">القيمة (ج.م)</label>
+                    <input asp-for="Amount" class="form-input" type="number" step="0.01" min="0" />
+                    <span asp-validation-for="Amount" class="text-danger"></span>
+                </div>
+                <div>
+                    <label class="form-label">التاريخ</label>
+                    <input asp-for="CreatedAt" class="form-input" type="datetime-local" value='@Model.CreatedAt.ToString("yyyy-MM-ddTHH:mm")' />
+                    <span asp-validation-for="CreatedAt" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div>
+                <label class="form-label">ملاحظات</label>
+                <textarea asp-for="Notes" class="form-input" rows="3"></textarea>
+                <span asp-validation-for="Notes" class="text-danger"></span>
+            </div>
+
+            <div class="card" style="padding:1rem;border:1px dashed rgba(0,0,0,0.12);">
+                <div style="font-weight:700;margin-bottom:0.5rem;">تكامل الخامات مع المصروف</div>
+                <div style="margin-bottom:0.75rem;">
+                    <label class="form-label">طريقة ربط الخامة</label>
+                    <select id="materialMode" class="form-select">
+                        <option value="none">بدون خامة</option>
+                        <option value="existing">خامة موجودة</option>
+                        <option value="new">إنشاء خامة جديدة</option>
+                    </select>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div id="existingMaterialGroup" style="display:none;">
+                        <label class="form-label">الخامة</label>
+                        <select asp-for="MaterialId" class="form-select" asp-items="ViewBag.MaterialId">
+                            <option value="">— بدون —</option>
+                        </select>
+                        <span asp-validation-for="MaterialId" class="text-danger"></span>
+                    </div>
+                    <div>
+                        <label class="form-label">الكمية التي ستضاف للمخزون</label>
+                        <input asp-for="MaterialQuantity" class="form-input" type="number" step="0.001" min="0" />
+                        <span asp-validation-for="MaterialQuantity" class="text-danger"></span>
+                    </div>
+                </div>
+                <div id="newMaterialFields" style="display:none;margin-top:0.75rem;">
+                    <input type="hidden" id="createNewMaterialField" name="CreateNewMaterial" value="false" />
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                        <div>
+                            <label class="form-label">كود الخامة الجديدة</label>
+                            <input name="NewMaterialId" class="form-input" placeholder="RM-001" />
+                            <span id="newMaterialIdClientError" class="text-danger"></span>
+                            <span class="text-danger">@Html.ValidationMessage("NewMaterialId")</span>
+                        </div>
+                        <div>
+                            <label class="form-label">اسم الخامة الجديدة</label>
+                            <input name="NewMaterialName" class="form-input" placeholder="اسم الخامة" />
+                            <span id="newMaterialNameClientError" class="text-danger"></span>
+                            <span class="text-danger">@Html.ValidationMessage("NewMaterialName")</span>
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.75rem;">
+                        <div>
+                            <label class="form-label">الوحدة</label>
+                            <select name="NewMaterialUnitId" class="form-select" asp-items="ViewBag.MaterialUnits">
+                                <option value="">اختر الوحدة</option>
+                            </select>
+                            <span id="newMaterialUnitClientError" class="text-danger"></span>
+                            <span class="text-danger">@Html.ValidationMessage("NewMaterialUnitId")</span>
+                        </div>
+                        <div>
+                            <label class="form-label">حد التنبيه</label>
+                            <input name="NewMaterialAlertLimit" class="form-input" type="number" step="0.001" min="0" value="0" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+                <button type="submit" class="btn-admin-header">حفظ</button>
+                <a asp-action="Index" class="btn-modal-secondary" style="text-decoration:none;">رجوع</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const mode = document.getElementById('materialMode');
+            const existing = document.getElementById('existingMaterialGroup');
+            const newer = document.getElementById('newMaterialFields');
+            const createField = document.getElementById('createNewMaterialField');
+            const materialSelect = document.getElementById('MaterialId');
+            const qtyInput = document.getElementById('MaterialQuantity');
+            const form = mode ? mode.closest('form') : null;
+            const qtyError = document.querySelector('span[data-valmsg-for="MaterialQuantity"]');
+            const newIdInput = document.querySelector('input[name="NewMaterialId"]');
+            const newNameInput = document.querySelector('input[name="NewMaterialName"]');
+            const newUnitInput = document.querySelector('select[name="NewMaterialUnitId"]');
+            const newIdClientError = document.getElementById('newMaterialIdClientError');
+            const newNameClientError = document.getElementById('newMaterialNameClientError');
+            const newUnitClientError = document.getElementById('newMaterialUnitClientError');
+
+            function setError(el, message) {
+                if (!el) return;
+                el.textContent = message || '';
+            }
+
+            function applyMode() {
+                const value = mode.value;
+                const existingMode = value === 'existing';
+                const newMode = value === 'new';
+                existing.style.display = existingMode ? '' : 'none';
+                newer.style.display = newMode ? '' : 'none';
+                createField.value = newMode ? 'true' : 'false';
+                if (!existingMode && materialSelect) {
+                    materialSelect.value = '';
+                }
+                if (!newMode) {
+                    setError(newIdClientError, '');
+                    setError(newNameClientError, '');
+                    setError(newUnitClientError, '');
+                }
+                if (qtyError && !newMode) {
+                    qtyError.textContent = '';
+                }
+            }
+
+            function validateBeforeSubmit(e) {
+                if (!mode || mode.value !== 'new') return;
+
+                let hasError = false;
+                const qty = parseFloat(qtyInput?.value || '0');
+                const idVal = (newIdInput?.value || '').trim();
+                const nameVal = (newNameInput?.value || '').trim();
+                const unitVal = (newUnitInput?.value || '').trim();
+
+                setError(newIdClientError, '');
+                setError(newNameClientError, '');
+                setError(newUnitClientError, '');
+                if (qtyError) qtyError.textContent = '';
+
+                if (!idVal) {
+                    setError(newIdClientError, 'كود الخامة الجديدة مطلوب.');
+                    hasError = true;
+                }
+                if (!nameVal) {
+                    setError(newNameClientError, 'اسم الخامة الجديدة مطلوب.');
+                    hasError = true;
+                }
+                if (!unitVal) {
+                    setError(newUnitClientError, 'اختر وحدة للخامة الجديدة.');
+                    hasError = true;
+                }
+                if (!(qty > 0)) {
+                    if (qtyError) qtyError.textContent = 'كمية الخامة يجب أن تكون أكبر من صفر.';
+                    hasError = true;
+                }
+
+                if (hasError) {
+                    e.preventDefault();
+                }
+            }
+
+            const hasMaterial = materialSelect && materialSelect.value;
+            mode.value = hasMaterial ? 'existing' : 'none';
+            mode.addEventListener('change', applyMode);
+            form?.addEventListener('submit', validateBeforeSubmit);
+            applyMode();
+        })();
+    </script>
+}
+

@@ -1,0 +1,77 @@
+@{
+    Layout = null;
+    var title = (ViewData["Title"]?.ToString() ?? "MagdyPOS");
+    var description = ViewData["MetaDescription"]?.ToString()
+                      ?? "برنامج كاشير للمطاعم والكافيهات يعمل بدون إنترنت. مبيعات، مخزون خامات، مصروفات، تقارير، حضور وانصراف.";
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@title</title>
+    <meta name="description" content="@description" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="@title" />
+    <meta property="og:description" content="@description" />
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/marketing.css" asp-append-version="true" />
+
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "SoftwareApplication",
+      "name": "MagdyPOS",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Windows",
+      "description": "@description",
+      "offers": {
+        "@@type": "Offer",
+        "priceCurrency": "EGP",
+        "price": "0",
+        "availability": "https://schema.org/InStock"
+      }
+    }
+    </script>
+</head>
+<body>
+    <header class="mkt-header">
+        <div class="mkt-container mkt-header__inner">
+            <div class="mkt-brand">
+                <div class="mkt-brand__logo">MP</div>
+                <div class="mkt-brand__text">
+                    <div class="mkt-brand__name">MagdyPOS</div>
+                    <div class="mkt-brand__tag">Offline POS</div>
+                </div>
+            </div>
+
+            <nav class="mkt-nav">
+                <a href="#features">المميزات</a>
+                <a href="#pricing">الأسعار</a>
+                <a href="#faq">الأسئلة</a>
+                <a href="#contact" class="mkt-btn mkt-btn--primary">تواصل</a>
+                <a href="/Login/Login" class="mkt-btn">تسجيل الدخول</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <footer class="mkt-footer">
+        <div class="mkt-container mkt-footer__inner">
+            <div>
+                <div class="mkt-footer__title">MagdyPOS</div>
+                <div class="mkt-footer__muted">برنامج كاشير للمطاعم والكافيهات يعمل بدون إنترنت.</div>
+            </div>
+            <div class="mkt-footer__muted">
+                © @DateTime.Now.Year MagdyPOS
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
+

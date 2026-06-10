@@ -1,0 +1,76 @@
+@model AttendanceWeekReportViewModel
+
+<div class="admin-page-head">
+    <div>
+        <h1>حضور الموظفين - الأسبوع الحالي</h1>
+        <p>الأسبوع من @Model.WeekStart.ToString("yyyy-MM-dd") إلى @(Model.WeekEnd.AddDays(-1).ToString("yyyy-MM-dd")).</p>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:1rem;">
+    <div class="card-header">
+        <h2 class="card-title">اختيار تاريخ داخل الأسبوع</h2>
+        <form method="get" style="display:flex;gap:0.5rem;align-items:end;flex-wrap:wrap;margin-top:0.5rem;">
+            <div class="date-filter">
+                <label style="color:var(--text-gray);font-size:0.9rem;margin-right:0.25rem;">التاريخ</label>
+                <input name="date" type="date" class="form-control" value="@Model.WeekStart.ToString("yyyy-MM-dd")" />
+            </div>
+            <button type="submit" class="btn-admin-header">عرض</button>
+        </form>
+    </div>
+    <div class="card-body" style="color:var(--text-gray);">
+        ملاحظة: يتم احتساب الأسبوع بدءاً من يوم السبت.
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">الجدول الأسبوعي</h2>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>المستخدم</th>
+                    @foreach (var d in Model.Days)
+                    {
+                        <th style="text-align:center;">@d.Label</th>
+                    }
+                </tr>
+                </thead>
+                <tbody>
+                @if (Model.Users == null || !Model.Users.Any())
+                {
+                    <tr>
+                        <td colspan="8" style="padding: 1rem; color: var(--text-gray); text-align:center;">لا يوجد مستخدمون.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var u in Model.Users)
+                    {
+                        <tr>
+                            <td style="font-weight:700;">
+                                <div>@(string.IsNullOrWhiteSpace(u.FullName) ? u.UserName : u.FullName)</div>
+                                <div style="color:var(--text-gray);font-weight:400;font-size:0.9rem;">@u.UserName</div>
+                            </td>
+                            @foreach (var d in Model.Days)
+                            {
+                                u.RecordsByDate.TryGetValue(d.Date.Date, out var rec);
+                                var inTime = rec == null ? "—" : rec.CheckInAtUtc.ToLocalTime().ToString("HH:mm");
+                                var outTime = rec?.CheckOutAtUtc == null ? "—" : rec.CheckOutAtUtc.Value.ToLocalTime().ToString("HH:mm");
+                                <td style="text-align:center;color:var(--text-gray);">
+                                    <div style="font-weight:700;color:#111827;">@inTime</div>
+                                    <div>@outTime</div>
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

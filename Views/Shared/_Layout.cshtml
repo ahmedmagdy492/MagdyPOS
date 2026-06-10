@@ -1,0 +1,233 @@
+﻿@using MagdyPOS.Authorization
+@{
+    var ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var act = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var isAdmin = User.IsInRole(AppRoles.Admin);
+    var displayName = User.Identity?.Name ?? "—";
+    var userTypeLabel = User.IsInRole(AppRoles.Admin) ? "مدير" : "مبيعات";
+}
+<!DOCTYPE html><html dir="rtl" lang="ar">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@(ViewData["Title"] ?? "لوحة التحكم") | MagdyPOS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+    <link href="~/css/css2.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css">
+    <link rel="stylesheet" href="~/css/admin-modals.css" asp-append-version="true">
+    
+    
+</head>
+<body style="">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 3v18h18"></path>
+                    <path d="m19 9-5 5-4-4-3 3"></path>
+                </svg>
+            </div>
+            <div class="logo-text">MagdyPOS</div>
+        </div>
+        <nav class="menu">
+            <div class="menu-divider"></div>
+            @if (User.IsInRole(AppRoles.Sales))
+            {
+                <div style="margin:0.5rem 0.75rem;color:var(--text-gray);font-size:0.8rem;font-weight:700;">نقطة البيع</div>
+                <a asp-controller="Pos" asp-action="Index" class="menu-item @(ctrl == "Pos" ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-8 2a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"></path>
+                    </svg>
+                    <span>نقطة البيع</span>
+                </a>
+                <a asp-controller="Attendance" asp-action="My" class="menu-item @(ctrl == "Attendance" && act == "My" ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 6v6l4 2"></path>
+                        <circle cx="12" cy="12" r="10"></circle>
+                    </svg>
+                    <span>حضوري</span>
+                </a>
+                <div class="menu-divider"></div>
+            }
+            @if (isAdmin)
+            {
+                <div style="margin:0.5rem 0.75rem;color:var(--text-gray);font-size:0.8rem;font-weight:700;">لوحة التحكم</div>
+                <a asp-controller="Admin" asp-action="Index" class="menu-item @(ctrl == "Admin" && act == "Index" ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="7" height="9" x="3" y="3" rx="1"></rect>
+                        <rect width="7" height="5" x="14" y="3" rx="1"></rect>
+                        <rect width="7" height="9" x="14" y="12" rx="1"></rect>
+                        <rect width="7" height="5" x="3" y="16" rx="1"></rect>
+                    </svg>
+                    <span>لوحة التحكم</span>
+                </a>
+
+                <div class="menu-divider"></div>
+                <div style="margin:0.5rem 0.75rem;color:var(--text-gray);font-size:0.8rem;font-weight:700;">المبيعات</div>
+                <a asp-controller="Return" asp-action="Index" class="menu-item @(ctrl == "Return" ? "active" : "")">
+                    <svg class="svg-icon" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M927.2 610.5c0 143-116.3 259.4-259.3 259.4H196.1c-12.9 0-23.4-10.4-23.4-23.4 0-12.9 10.4-23.4 23.4-23.4h471.7c117.2 0 212.6-95.4 212.6-212.6S785 397.8 667.8 397.8h-458l199.6 199.6c9.1 9.1 9.1 23.9 0 33-4.6 4.6-10.5 6.8-16.5 6.8s-11.9-2.3-16.5-6.8L137 391.1c-9.1-9.1-9.1-23.9 0-33l239.6-239.5c9.1-9.1 23.9-9.1 33 0s9.1 23.9 0 33L210 351.2h457.9c143 0 259.3 116.3 259.3 259.3z" /></svg>
+                    <span>المرتجعات</span>
+                </a>
+                <a asp-controller="Orders" asp-action="Index" class="menu-item @(ctrl == "Orders" ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path>
+                        <rect x="9" y="3" width="6" height="4" rx="1"></rect>
+                        <path d="M9 12h6"></path>
+                        <path d="M9 16h6"></path>
+                    </svg>
+                    <span>المبيعات</span>
+                </a>
+                <a asp-controller="Pos" asp-action="Index" class="menu-item @(ctrl == "Pos" ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-8 2a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"></path>
+                    </svg>
+                    <span>نقطة البيع</span>
+                </a>
+
+                <div class="menu-divider"></div>
+                <div style="margin:0.5rem 0.75rem;color:var(--text-gray);font-size:0.8rem;font-weight:700;">المخزون</div>
+                <a asp-controller="Expenses" asp-action="Index" class="menu-item @(ctrl == "Expenses" ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2v20"></path>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                    <span>المصروفات</span>
+                </a>
+                <a asp-controller="Products" asp-action="Index" class="menu-item @(ctrl == "Products" ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m7.5 4.27 9 5.15"></path>
+                        <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+                        <path d="m3.3 7 8.7 5 8.7-5"></path>
+                        <path d="M12 22V12"></path>
+                    </svg>
+                    <span>المنتجات</span>
+                </a>
+                <a asp-controller="Materials" asp-action="Index" class="menu-item @(ctrl == "Materials" ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path>
+                        <path d="M13 5v2"></path>
+                        <path d="M13 17v2"></path>
+                        <path d="M13 11v2"></path>
+                    </svg>
+                    <span>الخامات</span>
+                </a>
+
+                <div class="menu-divider"></div>
+                <div style="margin:0.5rem 0.75rem;color:var(--text-gray);font-size:0.8rem;font-weight:700;">التقارير</div>
+                <a asp-controller="Reports" asp-action="Stock" class="menu-item @(ctrl == "Reports" && act == "Stock" ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 3v18h18"></path>
+                        <path d="M7 14l3-3 4 4 7-7"></path>
+                    </svg>
+                    <span>تقارير المخزون</span>
+                </a>
+                <a asp-controller="Reports" asp-action="Revenue" class="menu-item @(ctrl == "Reports" && act == "Revenue" ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 3v18h18"></path>
+                        <path d="M7 15l3-3 3 3 5-6"></path>
+                    </svg>
+                    <span>تقرير الإيراد</span>
+                </a>
+                <a asp-controller="Reports" asp-action="DailySummary" class="menu-item @(ctrl == "Reports" && act == "DailySummary" ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 2v4"></path>
+                        <path d="M16 2v4"></path>
+                        <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                        <path d="M3 10h18"></path>
+                        <path d="M7 14h4"></path>
+                        <path d="M7 18h6"></path>
+                    </svg>
+                    <span>ملخص اليوم</span>
+                </a>
+
+                <div class="menu-divider"></div>
+                <div style="margin:0.5rem 0.75rem;color:var(--text-gray);font-size:0.8rem;font-weight:700;">الحضور</div>
+                <a asp-controller="Attendance" asp-action="Week" class="menu-item @(ctrl == "Attendance" && act == "Week" ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 2v4"></path>
+                        <path d="M16 2v4"></path>
+                        <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                        <path d="M3 10h18"></path>
+                        <path d="M7 14h4"></path>
+                        <path d="M7 18h6"></path>
+                    </svg>
+                    <span>حضور الموظفين</span>
+                </a>
+
+                <div class="menu-divider"></div>
+                <div style="margin:0.5rem 0.75rem;color:var(--text-gray);font-size:0.8rem;font-weight:700;">الإعدادات</div>
+                <a asp-controller="Units" asp-action="Index" class="menu-item @(ctrl == "Units" ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span>الوحدات</span>
+                </a>
+                <a asp-controller="Users" asp-action="Index" class="menu-item @(ctrl == "Users" ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4"></path>
+                        <circle cx="8.5" cy="7" r="4"></circle>
+                        <path d="M20 8v6M23 11h-6"></path>
+                    </svg>
+                    <span>المستخدمون</span>
+                </a>
+            }
+            <div class="menu-divider"></div>
+            <a asp-controller="Login" asp-action="Logout" class="menu-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" x2="9" y1="12" y2="12"></line>
+                </svg>
+                <span>تسجيل الخروج</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="hamburger" id="hamburgerBtn" aria-label="فتح القائمة">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="4" x2="20" y1="12" y2="12"></line>
+                        <line x1="4" x2="20" y1="6" y2="6"></line>
+                        <line x1="4" x2="20" y1="18" y2="18"></line>
+                    </svg>
+                </button>
+                <h1 class="page-title">@(ViewData["Title"] ?? "لوحة التحكم")</h1>
+            </div>
+            <div class="top-bar-right">
+                <div class="user-badge" title="المستخدم الحالي">
+                    <span class="user-badge__icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </span>
+                    <span class="user-badge__text">
+                        <span class="user-badge__name">@displayName</span>
+                        <span class="user-badge__role">@userTypeLabel</span>
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="content">
+            @RenderBody()
+        </div>
+    </main>
+
+    <script src="~/js/layout.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body></html>
