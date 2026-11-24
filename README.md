@@ -16,11 +16,22 @@
 
 </div>
 
-<!--
-  TIP: add screenshots/GIF here — it's the #1 thing that makes people star a repo.
-  Put images in docs/screenshots/ and uncomment:
-  <p align="center"><img src="docs/screenshots/pos.png" width="800" alt="MagdyPOS sales screen"></p>
--->
+<p align="center">
+  <img src="docs/screenshots/pos.png" width="900" alt="MagdyPOS sales screen">
+</p>
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/dashboard.png" alt="Admin dashboard"></td>
+    <td><img src="docs/screenshots/revenue.png" alt="Revenue report"></td>
+    <td><img src="docs/screenshots/stock.png" alt="Stock report with low-stock alerts"></td>
+  </tr>
+  <tr>
+    <td align="center">Dashboard</td>
+    <td align="center">Revenue report</td>
+    <td align="center">Stock & low-stock alerts</td>
+  </tr>
+</table>
 
 ## ✨ Features
 
@@ -56,6 +67,15 @@ dotnet run
 
 Requires the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
 
+### Option 3 — Docker (Linux / macOS / servers)
+
+```bash
+docker build -t magdypos .
+docker run -d -p 8080:8080 -v magdypos-data:/data --name magdypos magdypos
+```
+
+Then open `http://localhost:8080`. Your data is kept in the `magdypos-data` volume.
+
 ### Build your own single-file exe
 
 ```bash
@@ -90,7 +110,7 @@ All endpoints live under `/api/mobile` and use a Bearer token from `POST /api/mo
 - [ ] English UI / multi-language support
 - [ ] Thermal receipt printing
 - [ ] Barcode scanner support
-- [ ] Docker image
+- [x] Docker image
 - [ ] Companion mobile app
 - [ ] Automated tests
 

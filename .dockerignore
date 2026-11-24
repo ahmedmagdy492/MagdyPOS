@@ -1,0 +1,11 @@
+bin/
+obj/
+.vs/
+.git/
+.github/
+docs/
+updater/
+*.db
+*.db-shm
+*.db-wal
+*.user
