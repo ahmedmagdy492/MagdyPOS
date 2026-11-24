@@ -25,7 +25,7 @@ jobs:
           Copy-Item README.md, LICENSE publish/
           Get-ChildItem publish -Filter *.pdb | Remove-Item
           Compress-Archive -Path publish/* -DestinationPath MagdyPOS-${{ github.ref_name }}-win-x64.zip
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: MagdyPOS-${{ github.ref_name }}-win-x64.zip
           generate_release_notes: true
