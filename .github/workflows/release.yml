@@ -1,0 +1,31 @@
+name: Release
+
+# Push a tag like v1.0.0 to build a self-contained Windows exe and attach it to a GitHub Release.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Publish single-file exe
+        run: dotnet publish MagdyPOS.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish
+      - name: Package
+        shell: pwsh
+        run: |
+          Copy-Item Start.bat publish/
+          Copy-Item README.md, LICENSE publish/
+          Get-ChildItem publish -Filter *.pdb | Remove-Item
+          Compress-Archive -Path publish/* -DestinationPath MagdyPOS-${{ github.ref_name }}-win-x64.zip
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: MagdyPOS-${{ github.ref_name }}-win-x64.zip
+          generate_release_notes: true

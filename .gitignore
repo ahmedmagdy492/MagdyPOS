@@ -1,1 +1,33 @@
-.vs/*
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userprefs
+
+# .NET build output
+[Bb]in/
+[Oo]bj/
+publish/
+*.pdb
+
+# C++ updater build output
+updater/updater/
+updater/x64/
+updater/Debug/
+updater/Release/
+*.obj
+*.ilk
+*.idb
+*.ipdb
+*.iobj
+*.tlog
+
+# Local SQLite database (created automatically on first run)
+*.db
+*.db-shm
+*.db-wal
+
+# OS
+Thumbs.db
+.DS_Store

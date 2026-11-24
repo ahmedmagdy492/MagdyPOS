@@ -1,0 +1,20 @@
+name: 🐞 Bug report / بلاغ عن مشكلة
+description: Something isn't working / شيء لا يعمل
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened? / ماذا حدث؟
+      description: Steps to reproduce, what you expected, and what you saw instead.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version / الإصدار
+      placeholder: v1.0.0 or commit hash
+  - type: textarea
+    id: logs
+    attributes:
+      label: Screenshots or logs / صور أو سجلات
